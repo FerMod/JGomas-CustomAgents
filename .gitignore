@@ -1,0 +1,12 @@
+
+# Direct access
+*.lnk
+
+# Agent logs and lck files
+*.log
+*.log.*
+
+# Agent statistics and descriptions
+APDescription.txt
+JGOMAS_Statistics.txt
+MTPs-Main-Container.txt
