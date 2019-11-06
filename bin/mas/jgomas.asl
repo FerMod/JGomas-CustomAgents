@@ -789,21 +789,23 @@ current_task(nil).
 
 		!setup_priorities;    // Initial priorities are set
 
-		if (type("CLASS_SOLDIER"))  {
-				+my_shot_threshold(10);
-            } else { +my_shot_threshold(1); }
+		if (type("CLASS_SOLDIER")) {
+			+my_shot_threshold(10);
+		} else {
+			+my_shot_threshold(1);
+		}
 
 
 		?debug(Mode); if (Mode<=1) { .println("I'm ready"); }
-   		.get_type(MyType,FormattedType);
-   		+my_formattedType(FormattedType);
-   		.get_team(MyTeam,FormattedTeam);
-   		+my_formattedTeam(FormattedTeam);
+		.get_type(MyType,FormattedType);
+		+my_formattedType(FormattedType);
+		.get_team(MyTeam,FormattedTeam);
+		+my_formattedTeam(FormattedTeam);
 
 
-   		.concat("ID: 0 Name: ", MyName, " TYPE: ", FormattedType, " TEAM: ", FormattedTeam, X);
-   		.send_msg_with_conversation_id(M, tell, X, "INIT");
-   		?debug(Mode); if (Mode<=1) { .println("Sent 'INIT' message to ", M); }
+		.concat("ID: 0 Name: ", MyName, " TYPE: ", FormattedType, " TEAM: ", FormattedTeam, X);
+		.send_msg_with_conversation_id(M, tell, X, "INIT");
+		?debug(Mode); if (Mode<=1) { .println("Sent 'INIT' message to ", M); }
 
 
     	if (team("AXIS")) {
@@ -815,11 +817,11 @@ current_task(nil).
             }
 
             if (type("CLASS_MEDIC")) {
-					.register( "JGOMAS", "medic_AXIS");
+				.register( "JGOMAS", "medic_AXIS");
             }
 
             if (type("CLASS_FIELDOPS")) {
-                    .register( "JGOMAS", "fieldops_AXIS");
+				.register( "JGOMAS", "fieldops_AXIS");
 
             }
 
@@ -831,17 +833,17 @@ current_task(nil).
 
         	if (type("CLASS_SOLDIER"))  {
 				.register( "JGOMAS", "backup_ALLIED");
-            };
+            }
 
             if (type("CLASS_MEDIC")) {
 					.register( "JGOMAS", "medic_ALLIED");
-            };
+            }
 
             if (type("CLASS_FIELDOPS")) {
                     .register( "JGOMAS", "fieldops_ALLIED");
 
-            };
-		};
+            }
+		}
 
         .wait(2000);
         agent_setup;
@@ -922,7 +924,7 @@ current_task(nil).
 	?new_pos( RemoveX, RemoveZ );
 	-new_pos( RemoveX, RemoveZ );
 	// Return valid position with belief named as function.
-	-position( valid )
+	-position( valid );
 	.
 
 /////////////////////////////////
@@ -963,7 +965,7 @@ current_task(nil).
 */
 +!nearest( Agents )
 	<-
-	!nearest( Agents, 0 )
+	!nearest( Agents, 0 );
 	.
 
 +!nearest( Agents, K )
