@@ -24,8 +24,8 @@ type("CLASS_FIELDOPS").
 *******************************/
 
 /////////////////////////////////
-//  GET AGENT TO AIM 
-/////////////////////////////////  
+//  GET AGENT TO AIM
+/////////////////////////////////
 /**
  * Calculates if there is an enemy at sight.
  *
@@ -35,7 +35,7 @@ type("CLASS_FIELDOPS").
  * enemy found. Otherwise, the return value is aimed("false")
  *
  * <em> It's very useful to overload this plan. </em>
- * 
+ *
  */
 +!get_agent_to_aim
     <-
@@ -47,42 +47,42 @@ type("CLASS_FIELDOPS").
 
     if (Length > 0) {
         +bucle(0);
-        
+
         -+aimed("false");
-        
+
         while (aimed("false") & bucle(X) & (X < Length)) {
-            
+
             //.println("En el bucle, y X vale:", X);
-            
+
             .nth(X, FOVObjects, Object);
             // Object structure
             // [#, TEAM, TYPE, ANGLE, DISTANCE, HEALTH, POSITION ]
             .nth(2, Object, Type);
-            
+
             ?debug(Mode); if (Mode<=2) { .println("Objeto Analizado: ", Object); }
-            
+
             if (Type > 1000) {
                 ?debug(Mode); if (Mode<=2) { .println("I found some object."); }
             } else {
                 // Object may be an enemy
                 .nth(1, Object, Team);
                 ?my_formattedTeam(MyTeam);
-                
+
                 if (Team == 200) {  // Only if I'm ALLIED
-                    
+
                     ?debug(Mode); if (Mode<=2) { .println("Aiming an enemy. . .", MyTeam, " ", .number(MyTeam) , " ", Team, " ", .number(Team)); }
                     +aimed_agent(Object);
                     -+aimed("true");
-                    
+
                 }
-                
+
             }
-            
+
             -+bucle(X+1);
-            
+
         }
-        
-        
+
+
     }
 
     -bucle(_).
@@ -95,24 +95,24 @@ type("CLASS_FIELDOPS").
         .length(FOVObjects, Length);
         if (Length > 0) {
             ///?debug(Mode); if (Mode<=1) { .println("HAY ", Length, " OBJETOS A MI ALREDEDOR:\n", FOVObjects); }
-        };    
+        };
         -look_response(_)[source(M)];
         -+fovObjects(FOVObjects);
         //.//;
         !look.
-   
+
 /////////////////////////////////
 //  PERFORM ACTIONS
 /////////////////////////////////
 /**
 * Action to do when agent has an enemy at sight.
-* 
+*
 * This plan is called when agent has looked and has found an enemy,
 * calculating (in agreement to the enemy position) the new direction where
 * is aiming.
 *
 *  It's very useful to overload this plan.
-* 
+*
 */
 +!perform_aim_action
     <-  // Aimed agents have the following format:
@@ -128,7 +128,7 @@ type("CLASS_FIELDOPS").
 
             .nth(6, AimedAgent, NewDestination);
             ?debug(Mode); if (Mode<=1) { .println("NUEVO DESTINO DEBERIA SER: ", NewDestination); }
-        
+
         }
  .
 
@@ -136,43 +136,43 @@ type("CLASS_FIELDOPS").
 * Action to do when the agent is looking at.
 *
 * This plan is called just after Look method has ended.
-* 
+*
 * <em> It's very useful to overload this plan. </em>
-* 
+*
 */
 +!perform_look_action
     <-
-    ?my_position(X, Y, Z);    
+    ?my_position(X, Y, Z);
     ?objective(ObjectiveX, ObjectiveY, ObjectiveZ);
     !distance(pos(X, Y, Z), pos(ObjectiveX, ObjectiveY, ObjectiveZ));
     ?distance(Dist);
     .println("Position(x: ", X, ", y: ", Y, ", z: ", Z, ")\nObjective(x: ", ObjectiveX, ", y: ", ObjectiveY, ", z: ", ObjectiveZ, ")\nDistance: ", Dist);
     .
-   
+
 /**
 * Action to do if this agent cannot shoot.
-* 
+*
 * This plan is called when the agent try to shoot, but has no ammo. The
 * agent will spit enemies out. :-)
-* 
+*
 * <em> It's very useful to overload this plan. </em>
-* 
-*/  
+*
+*/
 +!perform_no_ammo_action.
    //<- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR PERFORM_NO_AMMO_ACTION GOES HERE."); }.
-    
+
 /**
 * Action to do when an agent is being shot.
-* 
+*
 * This plan is called every time this agent receives a messager from
 * agent Manager informing it is being shot.
-* 
+*
 * <em> It's very useful to overload this plan. </em>
-* 
+*
 */
 +!perform_injury_action.
-    //<- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR PERFORM_INJURY_ACTION GOES HERE."); }. 
-        
+    //<- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR PERFORM_INJURY_ACTION GOES HERE."); }.
+
 
 /////////////////////////////////
 //  SETUP PRIORITIES
@@ -188,7 +188,7 @@ type("CLASS_FIELDOPS").
         +task_priority("TASK_RUN_AWAY", 1500);
         +task_priority("TASK_GOTO_POSITION", 750);
         +task_priority("TASK_PATROLLING", 500);
-        +task_priority("TASK_WALKING_PATH", 1750).   
+        +task_priority("TASK_WALKING_PATH", 1750).
 
 
 
@@ -205,9 +205,9 @@ type("CLASS_FIELDOPS").
  *
  */
 
-+!update_targets 
++!update_targets
 	<-	?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR UPDATE_TARGETS GOES HERE."); }.
-	
+
 /////////////////////////////////
 //  CHECK MEDIC ACTION (ONLY MEDICS)
 /////////////////////////////////
@@ -222,8 +222,8 @@ type("CLASS_FIELDOPS").
  +!checkMedicAction
      <-  -+medicAction(on).
       // go to help
-      
-      
+
+
 /////////////////////////////////
 //  CHECK FIELDOPS ACTION (ONLY FIELDOPS)
 /////////////////////////////////
@@ -254,29 +254,29 @@ type("CLASS_FIELDOPS").
  */
 +!performThresholdAction
        <-
-       
+
        ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR PERFORM_TRESHOLD_ACTION GOES HERE."); }
-       
+
        ?my_ammo_threshold(At);
        ?my_ammo(Ar);
-       
-       if (Ar <= At) { 
+
+       if (Ar <= At) {
           ?my_position(X, Y, Z);
-          
+
          .my_team("fieldops_ALLIED", E1);
          //.println("Mi equipo intendencia: ", E1 );
          .concat("cfa(",X, ", ", Y, ", ", Z, ", ", Ar, ")", Content1);
          .send_msg_with_conversation_id(E1, tell, Content1, "CFA");
-       
-       
+
+
        }
-       
+
        ?my_health_threshold(Ht);
        ?my_health(Hr);
-       
-       if (Hr <= Ht) { 
+
+       if (Hr <= Ht) {
           ?my_position(X, Y, Z);
-          
+
          .my_team("medic_ALLIED", E2);
          //.println("Mi equipo medico: ", E2 );
          .concat("cfm(",X, ", ", Y, ", ", Z, ", ", Hr, ")", Content2);
@@ -284,27 +284,27 @@ type("CLASS_FIELDOPS").
 
        }
        .
-       
+
 /////////////////////////////////
 //  ANSWER_ACTION_CFM_OR_CFA
 /////////////////////////////////
 
-    
+
 +cfm_agree[source(M)]
    <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR cfm_agree GOES HERE."); };
-      -cfm_agree.  
+      -cfm_agree.
 
 +cfa_agree[source(M)]
    <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR cfa_agree GOES HERE."); };
-      -cfa_agree.  
+      -cfa_agree.
 
 +cfm_refuse[source(M)]
    <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR cfm_refuse GOES HERE."); };
-      -cfm_refuse.  
+      -cfm_refuse.
 
 +cfa_refuse[source(M)]
    <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR cfa_refuse GOES HERE."); };
-      -cfa_refuse.  
+      -cfa_refuse.
 
 
 /////////////////////////////////
@@ -312,6 +312,6 @@ type("CLASS_FIELDOPS").
 /////////////////////////////////
 
 +!init
-   <- 
+   <-
    ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR init GOES HERE."); }
-   . 
+   .
