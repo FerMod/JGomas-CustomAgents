@@ -822,7 +822,6 @@ current_task(nil).
 
             if (type("CLASS_FIELDOPS")) {
 				.register( "JGOMAS", "fieldops_AXIS");
-
             }
 
         }
@@ -836,12 +835,11 @@ current_task(nil).
             }
 
             if (type("CLASS_MEDIC")) {
-					.register( "JGOMAS", "medic_ALLIED");
+				.register( "JGOMAS", "medic_ALLIED");
             }
 
             if (type("CLASS_FIELDOPS")) {
-                    .register( "JGOMAS", "fieldops_ALLIED");
-
+				.register( "JGOMAS", "fieldops_ALLIED");
             }
 		}
 

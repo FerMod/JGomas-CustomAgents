@@ -41,53 +41,55 @@ type("CLASS_SOLDIER").
 * 
 */  
 +!get_agent_to_aim
-<-  ?debug(Mode); if (Mode<=2) { .println("Looking for agents to aim."); }
-?fovObjects(FOVObjects);
-.length(FOVObjects, Length);
+    <-
+    ?debug(Mode); if (Mode<=2) { .println("Looking for agents to aim."); }
+    ?fovObjects(FOVObjects);
+    .length(FOVObjects, Length);
 
-?debug(Mode); if (Mode<=1) { .println("El numero de objetos es:", Length); }
+    ?debug(Mode); if (Mode<=1) { .println("El numero de objetos es:", Length); }
 
-if (Length > 0) {
-    +bucle(0);
-    
-    -+aimed("false");
-    
-    while (aimed("false") & bucle(X) & (X < Length)) {
+    if (Length > 0) {
+        +bucle(0);
         
-        //.println("En el bucle, y X vale:", X);
+        -+aimed("false");
         
-        .nth(X, FOVObjects, Object);
-        // Object structure
-        // [#, TEAM, TYPE, ANGLE, DISTANCE, HEALTH, POSITION ]
-        .nth(2, Object, Type);
-        
-        ?debug(Mode); if (Mode<=2) { .println("Objeto Analizado: ", Object); }
-        
-        if (Type > 1000) {
-            ?debug(Mode); if (Mode<=2) { .println("I found some object."); }
-        } else {
-            // Object may be an enemy
-            .nth(1, Object, Team);
-            ?my_formattedTeam(MyTeam);
+        while (aimed("false") & bucle(X) & (X < Length)) {
             
-            if (Team == 200) {  // Only if I'm ALLIED
-				
-                ?debug(Mode); if (Mode<=2) { .println("Aiming an enemy. . .", MyTeam, " ", .number(MyTeam) , " ", Team, " ", .number(Team)); }
-                +aimed_agent(Object);
-                -+aimed("true");
+            //.println("En el bucle, y X vale:", X);
+            
+            .nth(X, FOVObjects, Object);
+            // Object structure
+            // [#, TEAM, TYPE, ANGLE, DISTANCE, HEALTH, POSITION ]
+            .nth(2, Object, Type);
+            
+            ?debug(Mode); if (Mode<=2) { .println("Objeto Analizado: ", Object); }
+            
+            if (Type > 1000) {
+                ?debug(Mode); if (Mode<=2) { .println("I found some object."); }
+            } else {
+                // Object may be an enemy
+                .nth(1, Object, Team);
+                ?my_formattedTeam(MyTeam);
+                
+                if (Team == 200) {  // Only if I'm ALLIED
+                    
+                    ?debug(Mode); if (Mode<=2) { .println("Aiming an enemy. . .", MyTeam, " ", .number(MyTeam) , " ", Team, " ", .number(Team)); }
+                    +aimed_agent(Object);
+                    -+aimed("true");
+                    
+                }
                 
             }
             
+            -+bucle(X+1);
+            
         }
         
-        -+bucle(X+1);
         
     }
-    
-    
-}
 
--bucle(_).
+    -bucle(_);
+    .
 
 /////////////////////////////////
 //  LOOK RESPONSE
@@ -129,11 +131,11 @@ if (Length > 0) {
 
         if (AimedAgentTeam == 200) {
     
-                .nth(6, AimedAgent, NewDestination);
-                ?debug(Mode); if (Mode<=1) { .println("NUEVO DESTINO DEBERIA SER: ", NewDestination); }
-          
-            }
- .
+            .nth(6, AimedAgent, NewDestination);
+            ?debug(Mode); if (Mode<=1) { .println("NUEVO DESTINO DEBERIA SER: ", NewDestination); }
+        
+        }
+    .
 
 /**
 * Action to do when the agent is looking at.
