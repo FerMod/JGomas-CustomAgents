@@ -1,4 +1,4 @@
-debug(1).
+debug(3).
 
 // Name of the manager
 manager("Manager").
@@ -6,7 +6,7 @@ manager("Manager").
 // Team of troop.
 team("AXIS").
 // Type of troop.
-type("CLASS_FIELDOPS").
+type("CLASS_SOLDIER").
 
 // Value of "closeness" to the Flag, when patrolling in defense
 patrollingRadius(64).
@@ -149,7 +149,7 @@ patrollingRadius(64).
 
     .random(Z);
     NewPosZ = PosZ + Rad / 2 - Z * Rad;
-    .println("RANDOM(X:", X, ", Z:", Z, ")");
+    //.println("RANDOM(X:", X, ", Z:", Z, ")");
 
     !add_task(task("TASK_GOTO_POSITION", M, pos(NewPosX, PosY, NewPosZ), ""));
     .
