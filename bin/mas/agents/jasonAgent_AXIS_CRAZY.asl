@@ -144,13 +144,21 @@ patrollingRadius(64).
 	?patrollingRadius(Rad);
     ?my_position(PosX, PosY, PosZ);
 
-    .random(X);
-    NewPosX = PosX + Rad / 2 - X * Rad;
+    +newPos(PosX, PosZ);
+    +position(invalid);
+    while (position(invalid)) {
+        -position(invalid);
 
-    .random(Z);
-    NewPosZ = PosZ + Rad / 2 - Z * Rad;
-    //.println("RANDOM(X:", X, ", Z:", Z, ")");
+        .random(X);
+        NewPosX = PosX + Rad / 2 - X * Rad;
 
+        .random(Z);
+        NewPosZ = PosZ + Rad / 2 - Z * Rad;
+
+        check_position(pos(NewPosX, PosY, NewPosZ));
+        -+newPos(NewPosX, NewPosZ);
+    }
+    ?newPos(NewPosX, NewPosZ);
     !add_task(task("TASK_GOTO_POSITION", M, pos(NewPosX, PosY, NewPosZ), ""));
     .
 
