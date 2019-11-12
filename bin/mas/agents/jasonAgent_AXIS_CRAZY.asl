@@ -144,7 +144,6 @@ patrollingRadius(64).
 	?patrollingRadius(Rad);
     ?my_position(PosX, PosY, PosZ);
 
-    +newPos(PosX, PosZ);
     +position(invalid);
     while (position(invalid)) {
         -position(invalid);
@@ -156,7 +155,8 @@ patrollingRadius(64).
         NewPosZ = PosZ + Rad / 2 - Z * Rad;
 
         check_position(pos(NewPosX, PosY, NewPosZ));
-        -+newPos(NewPosX, NewPosZ);
+        -newPos(_, _);
+        +newPos(NewPosX, NewPosZ);
     }
     ?newPos(NewPosX, NewPosZ);
     !add_task(task("TASK_GOTO_POSITION", M, pos(NewPosX, PosY, NewPosZ), ""));
