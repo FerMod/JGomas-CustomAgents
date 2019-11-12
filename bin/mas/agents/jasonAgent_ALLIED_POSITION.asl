@@ -6,7 +6,7 @@ manager("Manager").
 // Team of troop.
 team("ALLIED").
 // Type of troop.
-type("CLASS_FIELDOPS").
+type("CLASS_SOLDIER").
 
 
 { include("jgomas.asl") }
@@ -144,9 +144,15 @@ type("CLASS_FIELDOPS").
     <-
     ?my_position(X, Y, Z);
     ?objective(ObjectiveX, ObjectiveY, ObjectiveZ);
+
     !distance(pos(X, Y, Z), pos(ObjectiveX, ObjectiveY, ObjectiveZ));
-    ?distance(Dist);
-    .println("Position(x: ", X, ", y: ", Y, ", z: ", Z, ")\nObjective(x: ", ObjectiveX, ", y: ", ObjectiveY, ", z: ", ObjectiveZ, ")\nDistance: ", Dist);
+    ?distance(DistFlag);
+
+    ?base_pos(BaseX, BaseY, BaseZ);
+    !distance(pos(X, Y, Z), pos(BaseX, BaseY, BaseZ));
+    ?distance(DistBase);
+
+    .println("Position(x: ", X, ", y: ", Y, ", z: ", Z, ")\nDistance to Flag: ", DistFlag, "\nDistance to Base: ", DistBase);
     .
 
 /**
@@ -181,7 +187,7 @@ type("CLASS_FIELDOPS").
 +!setup_priorities
     <-  +task_priority("TASK_NONE",0);
         +task_priority("TASK_GIVE_MEDICPAKS", 0);
-        +task_priority("TASK_GIVE_AMMOPAKS", 2000);
+        +task_priority("TASK_GIVE_AMMOPAKS", 0);
         +task_priority("TASK_GIVE_BACKUP", 0);
         +task_priority("TASK_GET_OBJECTIVE",1000);
         +task_priority("TASK_ATTACK", 1000);
@@ -313,5 +319,6 @@ type("CLASS_FIELDOPS").
 
 +!init
    <-
-   ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR init GOES HERE."); }
+   ?my_position(X, Y, Z);
+   +base_pos(X, Y, Z);
    .

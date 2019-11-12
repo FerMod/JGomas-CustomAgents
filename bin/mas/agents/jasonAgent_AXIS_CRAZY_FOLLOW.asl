@@ -1,4 +1,4 @@
-debug(3).
+debug(1).
 
 // Name of the manager
 manager("Manager").
@@ -40,54 +40,7 @@ patrollingRadius(64).
  * <em> It's very useful to overload this plan. </em>
  *
  */
-+!get_agent_to_aim
-    <-  ?debug(Mode); if (Mode<=2) { .println("Looking for agents to aim."); }
-        ?fovObjects(FOVObjects);
-        .length(FOVObjects, Length);
-
-        ?debug(Mode); if (Mode<=1) { .println("El numero de objetos es:", Length); }
-
-        if (Length > 0) {
-		    +bucle(0);
-
-            -+aimed("false");
-
-            while (aimed("false") & bucle(X) & (X < Length)) {
-
-                //.println("En el bucle, y X vale:", X);
-
-                .nth(X, FOVObjects, Object);
-                // Object structure
-                // [#, TEAM, TYPE, ANGLE, DISTANCE, HEALTH, POSITION ]
-                .nth(2, Object, Type);
-
-                ?debug(Mode); if (Mode<=2) { .println("Objeto Analizado: ", Object); }
-
-                if (Type > 1000) {
-                    ?debug(Mode); if (Mode<=2) { .println("I found some object."); }
-                } else {
-                    // Object may be an enemy
-                    .nth(1, Object, Team);
-                    ?my_formattedTeam(MyTeam);
-
-                    if (Team == 100) {  // Only if I'm AXIS
-
- 					    ?debug(Mode); if (Mode<=2) { .println("Aiming an enemy. . .", MyTeam, " ", .number(MyTeam) , " ", Team, " ", .number(Team)); }
-					    +aimed_agent(Object);
-                        -+aimed("true");
-
-                    }
-
-                }
-
-                -+bucle(X+1);
-
-            }
-
-
-        }
-
-     -bucle(_).
++!get_agent_to_aim .
 
 
 
@@ -119,24 +72,7 @@ patrollingRadius(64).
  *  It's very useful to overload this plan.
  *
  */
-
-+!perform_aim_action
-    <-  // Aimed agents have the following format:
-        // [#, TEAM, TYPE, ANGLE, DISTANCE, HEALTH, POSITION ]
-        ?aimed_agent(AimedAgent);
-        ?debug(Mode); if (Mode<=1) { .println("AimedAgent ", AimedAgent); }
-        .nth(1, AimedAgent, AimedAgentTeam);
-        ?debug(Mode); if (Mode<=2) { .println("BAJO EL PUNTO DE MIRA TENGO A ALGUIEN DEL EQUIPO ", AimedAgentTeam); }
-        ?my_formattedTeam(MyTeam);
-
-
-        if (AimedAgentTeam == 100) {
-
-            .nth(6, AimedAgent, NewDestination);
-            ?debug(Mode); if (Mode<=1) { .println("NUEVO DESTINO MARCADO: ", NewDestination); }
-            //update_destination(NewDestination);
-        }
-        .
++!perform_aim_action .
 
 /**
  * Action to do when the agent is looking at.
@@ -179,18 +115,16 @@ patrollingRadius(64).
 /////////////////////////////////
 /**  You can change initial priorities if you want to change the behaviour of each agent  **/
 +!setup_priorities
-    <-  +task_priority("TASK_NONE",0);
-        +task_priority("TASK_GIVE_MEDICPAKS", 0);
-        +task_priority("TASK_GIVE_AMMOPAKS", 0);
-        +task_priority("TASK_GIVE_BACKUP", 0);
-        +task_priority("TASK_GET_OBJECTIVE",1000);
-        +task_priority("TASK_ATTACK", 1000);
-        +task_priority("TASK_RUN_AWAY", 1500);
-        +task_priority("TASK_GOTO_POSITION", 750);
-        +task_priority("TASK_PATROLLING", 500);
-        +task_priority("TASK_WALKING_PATH", 750).
-
-
+    <- +task_priority("TASK_NONE",0);
+       +task_priority("TASK_GIVE_MEDICPAKS", 0);
+       +task_priority("TASK_GIVE_AMMOPAKS", 0);
+       +task_priority("TASK_GIVE_BACKUP", 0);
+       +task_priority("TASK_GET_OBJECTIVE",1000);
+       +task_priority("TASK_ATTACK", 1000);
+       +task_priority("TASK_RUN_AWAY", 1500);
+       +task_priority("TASK_GOTO_POSITION", 750);
+       +task_priority("TASK_PATROLLING", 500);
+       +task_priority("TASK_WALKING_PATH", 750).
 
 /////////////////////////////////
 //  UPDATE TARGETS
@@ -205,8 +139,13 @@ patrollingRadius(64).
  *
  */
 +!update_targets
-	<-	?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR UPDATE_TARGETS GOES HERE.") }.
+    <-
+    ?manager(M);
+	?patrollingRadius(Rad);
+    ?my_position(PosX, PosY, PosZ);
 
+    //!add_task(task("TASK_GOTO_POSITION", M, pos(NewPosX, PosY, NewPosZ), ""));
+    .
 
 /////////////////////////////////
 //  CHECK MEDIC ACTION (ONLY MEDICS)
@@ -220,7 +159,7 @@ patrollingRadius(64).
  *
  */
 +!checkMedicAction
-<-  -+medicAction(on).
+    <- -+medicAction(on).
 // go to help
 
 
@@ -236,8 +175,9 @@ patrollingRadius(64).
  *
  */
 +!checkAmmoAction
-<-  -+fieldopsAction(on).
+    <- -+fieldopsAction(on).
 //  go to help
+
 
 
 
@@ -253,37 +193,35 @@ patrollingRadius(64).
  *
  */
 +!performThresholdAction
-       <-
+    <-
+    ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR PERFORM_TRESHOLD_ACTION GOES HERE."); }
 
-       ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR PERFORM_TRESHOLD_ACTION GOES HERE.") }
+    ?my_ammo_threshold(At);
+    ?my_ammo(Ar);
 
-       ?my_ammo_threshold(At);
-       ?my_ammo(Ar);
+    if (Ar <= At) {
+        ?my_position(X, Y, Z);
 
-       if (Ar <= At) {
-          ?my_position(X, Y, Z);
-
-         .my_team("fieldops_AXIS", E1);
-         //.println("Mi equipo intendencia: ", E1 );
-         .concat("cfa(",X, ", ", Y, ", ", Z, ", ", Ar, ")", Content1);
-         .send_msg_with_conversation_id(E1, tell, Content1, "CFA");
+        .my_team("fieldops_AXIS", E1);
+        //.println("Mi equipo intendencia: ", E1 );
+        .concat("cfa(",X, ", ", Y, ", ", Z, ", ", Ar, ")", Content1);
+        .send_msg_with_conversation_id(E1, tell, Content1, "CFA");
 
 
-       }
+    }
 
-       ?my_health_threshold(Ht);
-       ?my_health(Hr);
+    ?my_health_threshold(Ht);
+    ?my_health(Hr);
 
-       if (Hr <= Ht) {
-          ?my_position(X, Y, Z);
+    if (Hr <= Ht) {
+        ?my_position(X, Y, Z);
 
-         .my_team("medic_AXIS", E2);
-         //.println("Mi equipo medico: ", E2 );
-         .concat("cfm(",X, ", ", Y, ", ", Z, ", ", Hr, ")", Content2);
-         .send_msg_with_conversation_id(E2, tell, Content2, "CFM");
-
-       }
-       .
+        .my_team("medic_AXIS", E2);
+        //.println("Mi equipo medico: ", E2 );
+        .concat("cfm(",X, ", ", Y, ", ", Z, ", ", Hr, ")", Content2);
+        .send_msg_with_conversation_id(E2, tell, Content2, "CFM");
+    }
+    .
 
 /////////////////////////////////
 //  ANSWER_ACTION_CFM_OR_CFA
@@ -308,11 +246,11 @@ patrollingRadius(64).
       -cfa_refuse.
 
 
-
 /////////////////////////////////
 //  Initialize variables
 /////////////////////////////////
 
 +!init
-   <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR init GOES HERE.")}.
-
+<-
+   ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR init GOES HERE.");}
+.
