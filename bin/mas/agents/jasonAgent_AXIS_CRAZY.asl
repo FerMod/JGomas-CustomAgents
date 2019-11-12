@@ -82,7 +82,15 @@ patrollingRadius(64).
  * <em> It's very useful to overload this plan. </em>
  *
  */
-+!perform_look_action .
++!perform_look_action 
+    <- 
+    /*
+    ?my_position(X, Y, Z);
+    .my_team("AXIS", E1);
+    .concat("goto", Content1);
+    .send_msg_with_conversation_id(E1, tell Content1, "INT");
+    */
+    .
 /// <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR PERFORM_LOOK_ACTION GOES HERE.") }.
 
 /**
