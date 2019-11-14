@@ -48,15 +48,17 @@ patrollingRadius(64).
 //  LOOK RESPONSE
 /////////////////////////////////
 +look_response(FOVObjects)[source(M)]
-    <-  //-waiting_look_response;
-        .length(FOVObjects, Length);
-        if (Length > 0) {
-            ///?debug(Mode); if (Mode<=1) { .println("HAY ", Length, " OBJETOS A MI ALREDEDOR:\n", FOVObjects); }
-        };
-        -look_response(_)[source(M)];
-        -+fovObjects(FOVObjects);
-        //.//;
-        !look.
+    <-
+    //-waiting_look_response;
+    .length(FOVObjects, Length);
+    if (Length > 0) {
+        ///?debug(Mode); if (Mode<=1) { .println("HAY ", Length, " OBJETOS A MI ALREDEDOR:\n", FOVObjects); }
+    };
+    -look_response(_)[source(M)];
+    -+fovObjects(FOVObjects);
+    //.//;
+    !look;
+    .
 
 
 /////////////////////////////////
@@ -82,16 +84,14 @@ patrollingRadius(64).
  * <em> It's very useful to overload this plan. </em>
  *
  */
-+!perform_look_action 
-    <- 
-    /*
++!perform_look_action .
+    /*<-
     ?my_position(X, Y, Z);
     .my_team("AXIS", E1);
     .concat("goto", Content1);
     .send_msg_with_conversation_id(E1, tell Content1, "INT");
-    */
     .
-/// <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR PERFORM_LOOK_ACTION GOES HERE.") }.
+    */
 
 /**
  * Action to do if this agent cannot shoot.
@@ -123,16 +123,18 @@ patrollingRadius(64).
 /////////////////////////////////
 /**  You can change initial priorities if you want to change the behaviour of each agent  **/
 +!setup_priorities
-    <- +task_priority("TASK_NONE", 0);
-       +task_priority("TASK_GIVE_MEDICPAKS", 0);
-       +task_priority("TASK_GIVE_AMMOPAKS", 0);
-       +task_priority("TASK_GIVE_BACKUP", 0);
-       +task_priority("TASK_GET_OBJECTIVE", 0);
-       +task_priority("TASK_ATTACK", 0);
-       +task_priority("TASK_RUN_AWAY", 0);
-       +task_priority("TASK_GOTO_POSITION", 2000);
-       +task_priority("TASK_PATROLLING", 0);
-       +task_priority("TASK_WALKING_PATH", 0).
+    <-
+    +task_priority("TASK_NONE", 0);
+    +task_priority("TASK_GIVE_MEDICPAKS", 0);
+    +task_priority("TASK_GIVE_AMMOPAKS", 0);
+    +task_priority("TASK_GIVE_BACKUP", 0);
+    +task_priority("TASK_GET_OBJECTIVE", 0);
+    +task_priority("TASK_ATTACK", 0);
+    +task_priority("TASK_RUN_AWAY", 0);
+    +task_priority("TASK_GOTO_POSITION", 2000);
+    +task_priority("TASK_PATROLLING", 0);
+    +task_priority("TASK_WALKING_PATH", 0);
+    .
 
 /////////////////////////////////
 //  UPDATE TARGETS
@@ -163,8 +165,7 @@ patrollingRadius(64).
         NewPosZ = PosZ + Rad / 2 - Z * Rad;
 
         check_position(pos(NewPosX, PosY, NewPosZ));
-        -newPos(_, _);
-        +newPos(NewPosX, NewPosZ);
+        -+newPos(NewPosX, NewPosZ);
     }
     ?newPos(NewPosX, NewPosZ);
     !add_task(task("TASK_GOTO_POSITION", M, pos(NewPosX, PosY, NewPosZ), ""));
@@ -254,19 +255,19 @@ patrollingRadius(64).
 
 
 +cfm_agree[source(M)]
-   <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR cfm_agree GOES HERE.")};
+   <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR cfm_agree GOES HERE."); };
       -cfm_agree.
 
 +cfa_agree[source(M)]
-   <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR cfa_agree GOES HERE.")};
+   <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR cfa_agree GOES HERE."); };
       -cfa_agree.
 
 +cfm_refuse[source(M)]
-   <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR cfm_refuse GOES HERE.")};
+   <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR cfm_refuse GOES HERE."); };
       -cfm_refuse.
 
 +cfa_refuse[source(M)]
-   <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR cfa_refuse GOES HERE.")};
+   <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR cfa_refuse GOES HERE."); };
       -cfa_refuse.
 
 
@@ -275,6 +276,6 @@ patrollingRadius(64).
 /////////////////////////////////
 
 +!init
-<-
-   ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR init GOES HERE.");}
-.
+    <-
+    ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR init GOES HERE."); }
+    .

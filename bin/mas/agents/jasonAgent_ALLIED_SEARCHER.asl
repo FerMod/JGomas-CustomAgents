@@ -9,7 +9,7 @@ team("ALLIED").
 type("CLASS_SOLDIER").
 
 
-
+patrollingRadius(64).
 
 
 { include("jgomas.asl") }
@@ -182,7 +182,7 @@ type("CLASS_SOLDIER").
     +task_priority("TASK_GIVE_MEDICPAKS", 0);
     +task_priority("TASK_GIVE_AMMOPAKS", 0);
     +task_priority("TASK_GIVE_BACKUP", 0);
-    +task_priority("TASK_GET_OBJECTIVE", 1000);
+    +task_priority("TASK_GET_OBJECTIVE", 600);
     +task_priority("TASK_ATTACK", 1000);
     +task_priority("TASK_RUN_AWAY", 1500);
     +task_priority("TASK_GOTO_POSITION", 750);
@@ -204,8 +204,8 @@ type("CLASS_SOLDIER").
  * <em> It's very useful to overload this plan. </em>
  *
  */
-+!update_targets
-    <-
++!update_targets .
+   /* <-
     ?manager(M);
 	?patrollingRadius(Rad);
     ?my_position(PosX, PosY, PosZ);
@@ -226,6 +226,7 @@ type("CLASS_SOLDIER").
     ?newPos(NewPosX, NewPosZ);
     !add_task(task(2000, "TASK_GOTO_POSITION", M, pos(NewPosX, PosY, NewPosZ), ""));
     .
+    */
 
 /////////////////////////////////
 //  CHECK MEDIC ACTION (ONLY MEDICS)

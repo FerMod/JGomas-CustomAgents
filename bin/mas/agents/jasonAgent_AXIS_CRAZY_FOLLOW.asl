@@ -1,4 +1,4 @@
-debug(1).
+debug(3).
 
 // Name of the manager
 manager("Manager").
@@ -52,7 +52,7 @@ patrollingRadius(64).
         .length(FOVObjects, Length);
         if (Length > 0) {
             ///?debug(Mode); if (Mode<=1) { .println("HAY ", Length, " OBJETOS A MI ALREDEDOR:\n", FOVObjects); }
-        };
+        }
         -look_response(_)[source(M)];
         -+fovObjects(FOVObjects);
         //.//;
@@ -230,19 +230,19 @@ patrollingRadius(64).
 
 
 +cfm_agree[source(M)]
-   <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR cfm_agree GOES HERE.")};
+   <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR cfm_agree GOES HERE."); }
       -cfm_agree.
 
 +cfa_agree[source(M)]
-   <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR cfa_agree GOES HERE.")};
+   <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR cfa_agree GOES HERE."); }
       -cfa_agree.
 
 +cfm_refuse[source(M)]
-   <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR cfm_refuse GOES HERE.")};
+   <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR cfm_refuse GOES HERE."); }
       -cfm_refuse.
 
 +cfa_refuse[source(M)]
-   <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR cfa_refuse GOES HERE.")};
+   <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR cfa_refuse GOES HERE."); }
       -cfa_refuse.
 
 
@@ -251,6 +251,6 @@ patrollingRadius(64).
 /////////////////////////////////
 
 +!init
-<-
-   ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR init GOES HERE.");}
-.
+    <-
+    ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR init GOES HERE."); }
+    .
