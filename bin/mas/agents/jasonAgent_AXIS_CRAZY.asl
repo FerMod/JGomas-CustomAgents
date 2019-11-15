@@ -169,6 +169,10 @@ patrollingRadius(64).
     }
     ?newPos(NewPosX, NewPosZ);
     !add_task(task("TASK_GOTO_POSITION", M, pos(NewPosX, PosY, NewPosZ), ""));
+
+    .concat("im_crazy(", X, ", ", Y, ", ", Z, ")", Content);
+    .send_msg_with_conversation_id(M, tell, Content, "ACK_CRAZY");
+
     .
 
 
@@ -275,7 +279,4 @@ patrollingRadius(64).
 //  Initialize variables
 /////////////////////////////////
 
-+!init
-    <-
-    ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR init GOES HERE."); }
-    .
++!init .

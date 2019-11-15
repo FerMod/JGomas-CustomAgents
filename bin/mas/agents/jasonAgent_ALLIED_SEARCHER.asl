@@ -1,4 +1,4 @@
-debug(1).
+debug(2).
 
 // Name of the manager
 manager("Manager").
@@ -70,10 +70,12 @@ patrollingRadius(64).
                 .nth(1, Object, Team);
                 ?my_formattedTeam(MyTeam);
 
+                // .nth(6, Object, ObjPosition);
+
                 // Check if is AXIS
                 if (Team == 200) {
 
-                    ?debug(Mode); if (Mode<=2) { .println("Aiming an enemy. . .", MyTeam, " ", .number(MyTeam) , " ", Team, " ", .number(Team)); }
+                    ?debug(Mode); if (Mode<=2) { .println("Aiming an enemy. . .", MyTeam, " ", .number(MyTeam), " ", Team, " ", .number(Team)); }
                     +aimed_agent(Object);
                     -+aimed("true");
 
@@ -326,6 +328,13 @@ patrollingRadius(64).
       -cfa_refuse.
 
 
+
++im_crazy(X, Y, Z)[source(M)]
+    <-
+    +crazy_agent_pos(X, Y, Z);
+    .println("crazy_agent_pos(x: ", X, ", y: ", Y, ", z: ", Z, ")");
+    -im_crazy;
+    .
 
 /////////////////////////////////
 //  Initialize variables
