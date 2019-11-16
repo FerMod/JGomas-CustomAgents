@@ -1,4 +1,4 @@
-debug(2).
+debug(3).
 
 // Name of the manager
 manager("Manager").
@@ -8,13 +8,11 @@ team("ALLIED").
 // Type of troop.
 type("CLASS_SOLDIER").
 
-
 patrollingRadius(64).
 
+crazy_found(0).
 
 { include("jgomas.asl") }
-
-
 
 
 // Plans
@@ -63,14 +61,24 @@ patrollingRadius(64).
             .nth(2, Object, Type);
             ?debug(Mode); if (Mode<=2) { .println("Objeto Analizado: ", Object); }
 
+                /*
+                // TODO:
+                .my_team("AXIS", Axis);
+                !nearest(Axis);
+                ?nearest(Agent, Position, Distance);
+                .println("Nearest agent is ", Agent, " who is at ", Position, " (distance ", Distance, ")"  );
+                ?crazy_agent(CrazyAg);
+                if(Agent == CrazyAg) {
+                    .println( "Found ya!"  );
+                    update_destination(Position);
+                }*/
+
             if (Type > 1000) {
                 ?debug(Mode); if (Mode<=2) { .println("I found some object."); }
             } else {
                 // Object may be an enemy
                 .nth(1, Object, Team);
                 ?my_formattedTeam(MyTeam);
-
-                // .nth(6, Object, ObjPosition);
 
                 // Check if is AXIS
                 if (Team == 200) {
@@ -184,7 +192,7 @@ patrollingRadius(64).
     +task_priority("TASK_GIVE_MEDICPAKS", 0);
     +task_priority("TASK_GIVE_AMMOPAKS", 0);
     +task_priority("TASK_GIVE_BACKUP", 0);
-    +task_priority("TASK_GET_OBJECTIVE", 600);
+    +task_priority("TASK_GET_OBJECTIVE", 100);
     +task_priority("TASK_ATTACK", 1000);
     +task_priority("TASK_RUN_AWAY", 1500);
     +task_priority("TASK_GOTO_POSITION", 750);
@@ -207,7 +215,8 @@ patrollingRadius(64).
  *
  */
 +!update_targets .
-   /* <-
+    /*
+    <-
     ?manager(M);
 	?patrollingRadius(Rad);
     ?my_position(PosX, PosY, PosZ);
@@ -329,11 +338,18 @@ patrollingRadius(64).
 
 
 
-+im_crazy(X, Y, Z)[source(M)]
++im_crazy(X, Y, Z)[source(A)]
     <-
-    +crazy_agent_pos(X, Y, Z);
-    .println("crazy_agent_pos(x: ", X, ", y: ", Y, ", z: ", Z, ")");
-    -im_crazy;
+    .println("Tracking crazy agent ", A ," to pos(x: ", X, ", y: ", Y, ", z: ", Z, ")");
+    +crazy_agent(A);
+    ?current_task(task(C_priority, _, _, _, _));
+    .my_name(Me);
+    ?my_position(PosX, PosY, PosZ);
+    ?last_known_pos(CrazyX, CrazyY, CrazyZ);
+    !add_task(task(C_priority + 1, "TASK_GOTO_POSITION", Me, pos(CrazyX, PosY, CrazyZ), ""));
+    +last_known_pos(X, Y, Z);
+    -+state(standing);
+    -im_crazy(_, _, _);
     .
 
 /////////////////////////////////
@@ -342,5 +358,6 @@ patrollingRadius(64).
 
 +!init
     <-
-    ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR init GOES HERE."); }
+    ?objective(ObjectiveX, ObjectiveY, ObjectiveZ);
+    +last_known_pos(ObjectiveX, ObjectiveY, ObjectiveZ);
     .
