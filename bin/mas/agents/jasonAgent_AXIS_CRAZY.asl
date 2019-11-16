@@ -11,6 +11,7 @@ type("CLASS_SOLDIER").
 // Value of "closeness" to the Flag, when patrolling in defense
 patrollingRadius(64).
 
+randomMoveRadius(64).
 
 
 
@@ -151,7 +152,7 @@ patrollingRadius(64).
 +!update_targets
     <-
     ?manager(M);
-	?patrollingRadius(Rad);
+    ?randomMoveRadius(Rad); //?patrollingRadius(Rad);
     ?my_position(PosX, PosY, PosZ);
 
     +position(invalid);
@@ -170,8 +171,10 @@ patrollingRadius(64).
     ?newPos(NewPosX, NewPosZ);
     !add_task(task("TASK_GOTO_POSITION", M, pos(NewPosX, PosY, NewPosZ), ""));
 
-    .concat("im_crazy(", X, ", ", Y, ", ", Z, ")", Content);
-    .send_msg_with_conversation_id(M, tell, Content, "ACK_CRAZY");
+    .my_team("ALLIED", E);
+    .concat("im_crazy(", NewPosX, ",", PosY, ",", NewPosZ, ")", Content);
+    .send_msg_with_conversation_id(E, tell, Content, "CRAZY");
+    .println(Content);
 
     .
 
