@@ -262,35 +262,34 @@ type("CLASS_SOLDIER").
  *
  */
 +!performThresholdAction
-       <-
+        <-
 
-       ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR PERFORM_TRESHOLD_ACTION GOES HERE."); }
+        ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR PERFORM_TRESHOLD_ACTION GOES HERE."); }
 
-       ?my_ammo_threshold(At);
-       ?my_ammo(Ar);
+        ?my_ammo_threshold(At);
+        ?my_ammo(Ar);
 
-       if (Ar <= At) {
-          ?my_position(X, Y, Z);
+        if (Ar <= At) {
+            ?my_position(X, Y, Z);
 
-         .my_team("fieldops_ALLIED", E1);
-         //.println("Mi equipo intendencia: ", E1 );
-         .concat("cfa(",X, ", ", Y, ", ", Z, ", ", Ar, ")", Content1);
-         .send_msg_with_conversation_id(E1, tell, Content1, "CFA");
-       }
+            .my_team("fieldops_ALLIED", E1);
+            //.println("Mi equipo intendencia: ", E1 );
+            .concat("cfa(",X, ", ", Y, ", ", Z, ", ", Ar, ")", Content1);
+            .send_msg_with_conversation_id(E1, tell, Content1, "CFA");
+        }
 
-       ?my_health_threshold(Ht);
-       ?my_health(Hr);
+        ?my_health_threshold(Ht);
+        ?my_health(Hr);
 
-       if (Hr <= Ht) {
-          ?my_position(X, Y, Z);
+        if (Hr <= Ht) {
+            ?my_position(X, Y, Z);
 
-         .my_team("medic_ALLIED", E2);
-         //.println("Mi equipo medico: ", E2 );
-         .concat("cfm(",X, ", ", Y, ", ", Z, ", ", Hr, ")", Content2);
-         .send_msg_with_conversation_id(E2, tell, Content2, "CFM");
-
-       }
-       .
+            .my_team("medic_ALLIED", E2);
+            //.println("Mi equipo medico: ", E2 );
+            .concat("cfm(",X, ", ", Y, ", ", Z, ", ", Hr, ")", Content2);
+            .send_msg_with_conversation_id(E2, tell, Content2, "CFM");
+        }
+        .
 
 /////////////////////////////////
 //  ANSWER_ACTION_CFM_OR_CFA
