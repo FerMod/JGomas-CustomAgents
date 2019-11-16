@@ -1,4 +1,5 @@
 @echo off
+cls
 
 cd /D %~dp0
 cd bin\mas
