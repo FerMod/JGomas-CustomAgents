@@ -2,7 +2,7 @@
 cls
 
 set AGENTS=default
-rem set AGENTS=task
+rem set AGENTS=tasks
 rem set AGENTS=task5
 
 @cd /D %~dp0
