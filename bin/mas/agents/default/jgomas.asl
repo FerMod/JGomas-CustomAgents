@@ -175,8 +175,8 @@ current_task(nil).
         ?tasks(Tasks);
 		.length(Tasks, TaskListLength);
 		if (TaskListLength <= 0) {
-			.my_name(Myn);
-			//.println("No tengo tareas:",Myn );
+                        .my_name(Myn);
+                        //.println("No tengo tareas:",Myn );
 			!!fsm;
 			.fail;
 		}
@@ -318,49 +318,48 @@ current_task(nil).
 
 +!fsm : state(target_reached) & team("AXIS") & current_task(task(_,"TASK_PATROLLING",_,_,_))
 	<-
-	// Task accomplished, time to delete
-	?tasks(TaskList);
-	?debug(Mode); if (Mode<=1) { .println(">>>>>>>>>>>>>>>>>HE LLEGADO A MI PRIMER PUNTO DE PATROLLING!!!\nLA LISTA DE TAREAS ES ", TaskList); }
-	?current_task(PrioritaryTask);
+		// Task accomplished, time to delete
+		?tasks(TaskList);
+		?debug(Mode); if (Mode<=1) { .println(">>>>>>>>>>>>>>>>>HE LLEGADO A MI PRIMER PUNTO DE PATROLLING!!!\nLA LISTA DE TAREAS ES ", TaskList); }
+		?current_task(PrioritaryTask);
 
-	.delete(PrioritaryTask, TaskList, NewTaskList);
-	?debug(Mode); if (Mode<=1) { .println(">>>>>>>>>>>>>>>>>ELIMINADA LA TAREA ", PrioritaryTask, " LA LISTA CONTIENE ", NewTaskList); }
+		.delete(PrioritaryTask,TaskList,NewTaskList);
+		?debug(Mode); if (Mode<=1) { .println(">>>>>>>>>>>>>>>>>ELIMINADA LA TAREA ",PrioritaryTask , " LA LISTA CONTIENE ", NewTaskList); }
 
-	-+tasks(NewTaskList);
+        -+tasks(NewTaskList);
 
-	?manager(M);
-	?patrollingRadius(Rad);
-	?objective(ObjectiveX, ObjectiveY, ObjectiveZ);
+		?manager(M);
+    	?patrollingRadius(Rad);
+	    ?objective(ObjectiveX, ObjectiveY, ObjectiveZ);
 
-	+newPos(0,0);
+    	+newPos(0,0);
 
-	+position(invalid);
-	while (position(invalid)) {
-		-position(invalid);
-		.random(X);
-		NewObjectiveX = ObjectiveX + Rad / 2 - X * Rad;
-		.random(Z);
-		NewObjectiveZ = ObjectiveZ + Rad / 2 - Z * Rad;
-		?debug(Mode); if (Mode<=1) { .println("AXIS_FSM: New check position [", NewObjectiveX,", ", ObjectiveY, ", ", NewObjectiveZ,"] position."); }
-		check_position(pos(NewObjectiveX, ObjectiveY, NewObjectiveZ));
-		?position(P);
-		?debug(Mode); if (Mode<=1) { .println("AXIS_FSM: position is :", P); }
-		-+newPos(NewObjectiveX, NewObjectiveZ);
-	}
+        +position(invalid);
+        while (position(invalid)) {
+            -position(invalid);
+            .random(X);
+            NewObjectiveX = ObjectiveX + Rad / 2 - X * Rad;
+            .random(Z);
+            NewObjectiveZ = ObjectiveZ + Rad / 2 - Z * Rad;
+            ?debug(Mode); if (Mode<=1) { .println("AXIS_FSM: New check position [", NewObjectiveX,", ", ObjectiveY, ", ", NewObjectiveZ,"] position."); }
+            check_position(pos(NewObjectiveX, ObjectiveY, NewObjectiveZ));
+            ?position(P);
+            ?debug(Mode); if (Mode<=1) { .println("AXIS_FSM: position is :", P); }
+            -+newPos(NewObjectiveX, NewObjectiveZ);
+            }
 
-	?newPos(NewObjectiveX, NewObjectiveZ);
+          ?newPos(NewObjectiveX, NewObjectiveZ);
 
-	!add_task(task(500, "TASK_PATROLLING", M, pos(NewObjectiveX, ObjectiveY, NewObjectiveZ), ""));
-	?debug(Mode); if (Mode<=1) { .println("AXIS_FSM: New valid position [", NewObjectiveX,", ", ObjectiveY, ", ", NewObjectiveZ,"] position."); }
+	        !add_task(task(500, "TASK_PATROLLING", M, pos(NewObjectiveX, ObjectiveY, NewObjectiveZ), ""));
+  		    ?debug(Mode); if (Mode<=1) { .println("AXIS_FSM: New valid position [", NewObjectiveX,", ", ObjectiveY, ", ", NewObjectiveZ,"] position."); }
 
-	-+state(standing);
-	-position(_);
+			-+state(standing);
+			-position(_);
 
-	.drop_desire(fsm);
+            .drop_desire(fsm);
 
-	!!fsm;
-	.fail;
-	.
+			!!fsm;
+			.fail 	.
 
 
 +!fsm : state(target_reached) & current_task(task(_,"TASK_GIVE_MEDICPAKS",_,_,_)) & type("CLASS_MEDIC")
@@ -721,17 +720,17 @@ current_task(nil).
          // Soy medico y me han pedido ayuda
         !checkMedicAction;
         if (medicAction(on)) {
-            !add_task(task("TASK_GIVE_MEDICPAKS", M, pos(X, Y, Z), ""));
-            // .send(M, tell, "cfm_agree");
-            .concat("cfm_agree", Content);
-            .send_msg_with_conversation_id(M, tell, Content, "CFM");
-            -+state(standing);
+        					!add_task(task("TASK_GIVE_MEDICPAKS", M, pos(X, Y, Z), ""));
+    					   // .send(M, tell, "cfm_agree");
+                                           .concat("cfm_agree", Content);
+                                           .send_msg_with_conversation_id(M, tell, Content, "CFM");
+ 					        -+state(standing);
 
         } else {
 
-            //.send(M, tell, "cfm_refuse");
-            .concat("cfm_refuse", Content);
-            .send_msg_with_conversation_id(M, tell, Content, "CFM");
+         //.send(M, tell, "cfm_refuse");
+         .concat("cfm_refuse", Content);
+         .send_msg_with_conversation_id(M, tell, Content, "CFM");
 
         }
 
@@ -790,23 +789,21 @@ current_task(nil).
 
 		!setup_priorities;    // Initial priorities are set
 
-		if (type("CLASS_SOLDIER")) {
-			+my_shot_threshold(10);
-		} else {
-			+my_shot_threshold(1);
-		}
+		if (type("CLASS_SOLDIER"))  {
+				+my_shot_threshold(10);
+            } else { +my_shot_threshold(1); }
 
 
 		?debug(Mode); if (Mode<=1) { .println("I'm ready"); }
-		.get_type(MyType,FormattedType);
-		+my_formattedType(FormattedType);
-		.get_team(MyTeam,FormattedTeam);
-		+my_formattedTeam(FormattedTeam);
+   		.get_type(MyType,FormattedType);
+   		+my_formattedType(FormattedType);
+   		.get_team(MyTeam,FormattedTeam);
+   		+my_formattedTeam(FormattedTeam);
 
 
-		.concat("ID: 0 Name: ", MyName, " TYPE: ", FormattedType, " TEAM: ", FormattedTeam, X);
-		.send_msg_with_conversation_id(M, tell, X, "INIT");
-		?debug(Mode); if (Mode<=1) { .println("Sent 'INIT' message to ", M); }
+   		.concat("ID: 0 Name: ", MyName, " TYPE: ", FormattedType, " TEAM: ", FormattedTeam, X);
+   		.send_msg_with_conversation_id(M, tell, X, "INIT");
+   		?debug(Mode); if (Mode<=1) { .println("Sent 'INIT' message to ", M); }
 
 
     	if (team("AXIS")) {
@@ -818,11 +815,12 @@ current_task(nil).
             }
 
             if (type("CLASS_MEDIC")) {
-				.register( "JGOMAS", "medic_AXIS");
+					.register( "JGOMAS", "medic_AXIS");
             }
 
             if (type("CLASS_FIELDOPS")) {
-				.register( "JGOMAS", "fieldops_AXIS");
+                    .register( "JGOMAS", "fieldops_AXIS");
+
             }
 
         }
@@ -833,16 +831,17 @@ current_task(nil).
 
         	if (type("CLASS_SOLDIER"))  {
 				.register( "JGOMAS", "backup_ALLIED");
-            }
+            };
 
             if (type("CLASS_MEDIC")) {
-				.register( "JGOMAS", "medic_ALLIED");
-            }
+					.register( "JGOMAS", "medic_ALLIED");
+            };
 
             if (type("CLASS_FIELDOPS")) {
-				.register( "JGOMAS", "fieldops_ALLIED");
-            }
-		}
+                    .register( "JGOMAS", "fieldops_ALLIED");
+
+            };
+		};
 
         .wait(2000);
         agent_setup;
@@ -923,7 +922,7 @@ current_task(nil).
 	?new_pos( RemoveX, RemoveZ );
 	-new_pos( RemoveX, RemoveZ );
 	// Return valid position with belief named as function.
-	-position( valid );
+	-position( valid )
 	.
 
 /////////////////////////////////
@@ -964,7 +963,7 @@ current_task(nil).
 */
 +!nearest( Agents )
 	<-
-	!nearest( Agents, 0 );
+	!nearest( Agents, 0 )
 	.
 
 +!nearest( Agents, K )
@@ -1033,7 +1032,7 @@ current_task(nil).
 	-nearest_aux_ordered( 0 );
 	.
 
-//////////////////////////////
-/// END OF FILE
+//////////////////////////////        
+/// END OF FILE        
 //////////////////////////////
 
