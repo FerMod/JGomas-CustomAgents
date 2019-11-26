@@ -1,9 +1,13 @@
 @echo off
 cls
 
+set AGENTS_PATH="agents\default\"
+rem set AGENTS="agents\task"
+rem set AGENTS="agents\task5"
+
 @cd /D %~dp0
 @cd bin\mas
 
-start /B jgomas_manager.bat
+start /B "%AGENTS_PATH%\jgomas_manager.bat"
 timeout 5 > nul
-start /B jgomas_launcher.bat
+start /B "%AGENTS_PATH%\jgomas_launcher.bat"

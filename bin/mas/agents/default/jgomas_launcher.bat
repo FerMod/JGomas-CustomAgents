@@ -1,5 +1,5 @@
 
-set MAS_PATH="..\"
+set MAS_PATH="..\..\"
 
 set T1="T1:es.upv.dsic.gti_ia.JasonJGomas.BasicTroopJasonArch(jasonAgent_AXIS.asl)"
 set T2="T2:es.upv.dsic.gti_ia.JasonJGomas.BasicTroopJasonArch(jasonAgent_AXIS.asl)"

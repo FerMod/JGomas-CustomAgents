@@ -1,5 +1,5 @@
 
-set MAS_PATH="..\"
+set MAS_PATH="..\..\"
 
 set NUM_AGENTS=14
 set MAP="map_04"
