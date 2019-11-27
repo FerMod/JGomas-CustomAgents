@@ -39,6 +39,7 @@ type("CLASS_MEDIC").
  * <em> It's very useful to overload this plan. </em>
  * 
  */
+ 
 +!get_agent_to_aim
 <-  ?debug(Mode); if (Mode<=2) { .println("Looking for agents to aim."); }
 ?fovObjects(FOVObjects);
@@ -50,8 +51,9 @@ if (Length > 0) {
     +bucle(0);
     
     -+aimed("false");
-    
-    while (aimed("false") & bucle(X) & (X < Length)) {
+	-friendly_fire;
+	
+    while (not friendly_fire & bucle(X) & (X < Length)) {
         
         //.println("En el bucle, y X vale:", X);
         
@@ -68,26 +70,48 @@ if (Length > 0) {
             // Object may be an enemy
             .nth(1, Object, Team);
             ?my_formattedTeam(MyTeam);
-            
             if (Team == 200) {  // Only if I'm ALLIED
 				
                 ?debug(Mode); if (Mode<=2) { .println("Aiming an enemy. . .", MyTeam, " ", .number(MyTeam) , " ", Team, " ", .number(Team)); }
-                +aimed_agent(Object);
+                -+aimed_agent(Object);
                 -+aimed("true");
                 
-            }
-            
+            }else{
+				//Si tenemos un compañero en el punto de mira, no disparamos.
+				.nth(4, Object, Dis);
+				?current_task(task(_, _, _, PosObj, _));
+				?my_position(MX,MY,MZ);
+				.nth(6, Object, PosComp);
+				!cosangle(pos(MX,MY,MZ), PosObj, PosComp);
+				?cosangle(A);
+				if((A > 0.9 & Dis < 25) | Dis < 3){
+					-+aimed("false");
+					-aimed_agent(_);
+					+friendly_fire;
+				}
+			}   
         }
         
         -+bucle(X+1);
         
     }
     
-   
+    
 }
 
 -bucle(_).
 
++!cosangle(pos(X1,Y1,Z1), pos(X2,Y2,Z2), pos(X3,Y3,Z3)) <- X12 = X2-X1;
+													   	   Y12 = Y2-Y1;
+													       Z12 = Z2-Z1;
+													       X13 = X3-X1;
+													       Y13 = Y3-Y1;
+													       Z13 = Z3-Z1;
+													       ProdEsc = X12*X13+Y12*Y13+Z12*Z13;
+													       ProdMod = math.sqrt(X12*X12+Y12*Y12+Z12*Z12)*math.sqrt(X13*X13+Y13*Y13+Z13*Z13);
+													       Cosangle = ProdEsc/ProdMod;
+													       -+cosangle(Cosangle).
+														   
 /////////////////////////////////
 //  LOOK RESPONSE
 /////////////////////////////////
@@ -142,8 +166,46 @@ if (Length > 0) {
 * <em> It's very useful to overload this plan. </em>
 * 
 */
-+!perform_look_action .
-   /// <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR PERFORM_LOOK_ACTION GOES HERE.") }. 
+
+//Si no tenemos la bandera atacamos al enemigo con menos vida en el FOV (O al medico).
++!perform_look_action: not objectivePackTaken(on) <- -attack(_);
+													 -+minimum_health(1000);
+													 ?fovObjects(FOVObjects);
+													 .length(FOVObjects, L);
+													 -+iterador(0);
+													 while(iterador(C) & C < L){
+														.nth(C, FOVObjects, Objeto);
+														.nth(1, Objeto, Equipo);
+														.nth(6, Objeto, Pos);
+														?my_position(X,Y,Z);
+														!distance(Pos, pos(X,Y,Z));
+														?distance(Dis);
+														if(Equipo == 200 & Dis < 30){
+															.nth(2, Objeto, Tipo);
+															if(Tipo == 2){
+																-+attack(Pos);
+																-+minimum_health(-1);
+																-+state(standing);
+															}else{
+																.nth(5, Objeto, Health);
+																?minimum_health(M);
+																if(Health < M){
+																	-+attack(Pos);
+																	-+minimum_health(Health);
+																	-+state(standing);
+																}
+															}
+														}
+														-+iterador(C+1);
+													 }
+													 if(not state(standing) & not current_task(task(_, "TASK_WALKING_PATH", _, _, _))){
+													 	-+state(standing);
+													 }.
+											
++!perform_look_action <- ?my_position(X,Y,Z);
+						 .my_team("ALLIED", E1);
+						 .concat("goto(",X,",",Y,",",Z,")", Content1);
+						 .send_msg_with_conversation_id(E1, tell, Content1, "INT"). 
 
 /**
 * Action to do if this agent cannot shoot.
@@ -175,7 +237,7 @@ if (Length > 0) {
 /////////////////////////////////
 /**  You can change initial priorities if you want to change the behaviour of each agent  **/+!setup_priorities
     <-  +task_priority("TASK_NONE",0);
-        +task_priority("TASK_GIVE_MEDICPAKS", 2000);
+        +task_priority("TASK_GIVE_MEDICPAKS", 3000);
         +task_priority("TASK_GIVE_AMMOPAKS", 0);
         +task_priority("TASK_GIVE_BACKUP", 0);
         +task_priority("TASK_GET_OBJECTIVE",1000);
@@ -199,8 +261,38 @@ if (Length > 0) {
  * <em> It's very useful to overload this plan. </em>
  *
  */
-+!update_targets
-	<-	?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR UPDATE_TARGETS GOES HERE.") }.
+ 
++!update_targets: not prepared <- .wait(57000);
+								  +prepared.
+
+//Atacamos al enemigo.
++!update_targets: attack(Pos) & not objectivePackTaken(on) <-   ?tasks(Tasks);
+																if(not .member(task(_, "TASK_GIVE_MEDICPAKS", _, _, _), Tasks)){
+																	?current_task(task(C_priority, _, _, _, _));
+																	?manager(M);
+																	?my_position(X,Y,Z);
+																	!distance(pos(X,Y,Z),Pos);
+																	?distance(Dist);
+																	if(Dist > 3){
+																		!add_task(task(C_priority+1,"TASK_ATTACK", M, Pos, ""));
+																	}else{
+																		!add_task(task(C_priority+1,"TASK_ATTACK", M, pos(X,Y,Z), ""));
+																	}
+																}.
+
++!update_targets: objectivePackTaken(on) <- ?objective(X,Y,Z);
+											?manager(M);
+											!add_task(task(3500, "TASK_GET_OBJECTIVE", M, pos(X,Y,Z), "")).
+					
+//Si no, vamos al objetivo.
++!update_targets <- ?tasks(Tasks);
+					if(.member(task(_, "TASK_ATTACK", _, _, _), Tasks)){
+						.delete(task(_, "TASK_ATTACK", _, _, _), Tasks, NewTaskList);
+						-+tasks(NewTaskList);
+					}
+					?objective(X,Y,Z);
+					?manager(M);
+					!add_task(task(2500, "TASK_GET_OBJECTIVE", M, pos(X,Y,Z), "")).
 	
 	
 	
@@ -303,7 +395,10 @@ if (Length > 0) {
    <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR cfa_refuse GOES HERE.")};
       -cfa_refuse.  
 
-
++goto(X,Y,Z)[source(A)] <-  -+objective(X,Y,Z);
+							-+state(standing);
+							-goto(X,Y,Z)[source(A)].
+							
 /////////////////////////////////
 //  Initialize variables
 /////////////////////////////////

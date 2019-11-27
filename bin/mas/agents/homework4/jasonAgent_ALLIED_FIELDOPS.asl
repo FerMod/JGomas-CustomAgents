@@ -186,18 +186,21 @@ if (Length > 0) {
 															if(Tipo == 2){
 																-+attack(Pos);
 																-+minimum_health(-1);
-																-+state(standing)
+																-+state(standing);
 															}else{
 																.nth(5, Objeto, Health);
 																?minimum_health(M);
 																if(Health < M){
 																	-+attack(Pos);
 																	-+minimum_health(Health);
-																	-+state(standing)
+																	-+state(standing);
 																}
 															}
 														}
 														-+iterador(C+1);
+													 }
+													 if(not state(standing) & not current_task(task(_, "TASK_WALKING_PATH", _, _, _))){
+													 	-+state(standing);
 													 }.
 											
 +!perform_look_action <- ?my_position(X,Y,Z);
@@ -262,19 +265,26 @@ if (Length > 0) {
 
 +!update_targets: not prepared <- .wait(57000);
 								  +prepared.
-							
-+!update_targets: objectivePackTaken(on) <- ?objective(X,Y,Z);
-											?manager(M);
-											!add_task(task(3500, "TASK_GET_OBJECTIVE", M, pos(X,Y,Z), "")).
 
 //Atacamos al enemigo.
 +!update_targets: attack(Pos) & not objectivePackTaken(on) <-   ?tasks(Tasks);
 																if(not .member(task(_, "TASK_GIVE_AMMOPAKS", _, _, _), Tasks)){
 																	?current_task(task(C_priority, _, _, _, _));
 																	?manager(M);
-																	!add_task(task(C_priority+1,"TASK_ATTACK", M, Pos, ""))
+																	?my_position(X,Y,Z);
+																	!distance(pos(X,Y,Z),Pos);
+																	?distance(Dist);
+																	if(Dist > 3){
+																		!add_task(task(C_priority+1,"TASK_ATTACK", M, Pos, ""));
+																	}else{
+																		!add_task(task(C_priority+1,"TASK_ATTACK", M, pos(X,Y,Z), ""));
+																	}
 																}.
-					
+																
++!update_targets: objectivePackTaken(on) <- ?objective(X,Y,Z);
+											?manager(M);
+											!add_task(task(3500, "TASK_GET_OBJECTIVE", M, pos(X,Y,Z), "")).
+											
 //Si no, vamos al objetivo.
 +!update_targets <- ?tasks(Tasks);
 					if(.member(task(_, "TASK_ATTACK", _, _, _), Tasks)){

@@ -168,7 +168,8 @@ if (Length > 0) {
 */
 
 //Si no tenemos la bandera atacamos al enemigo con menos vida en el FOV (O al medico).
-+!perform_look_action: not objectivePackTaken(on) <- -attack(_);
++!perform_look_action: not objectivePackTaken(on) <- !check_flanqueo;
+													 -attack(_);
 													 -+minimum_health(1000);
 													 ?fovObjects(FOVObjects);
 													 .length(FOVObjects, L);
@@ -185,24 +186,38 @@ if (Length > 0) {
 															if(Tipo == 2){
 																-+attack(Pos);
 																-+minimum_health(-1);
-																-+state(standing)
+																-+state(standing);
 															}else{
 																.nth(5, Objeto, Health);
 																?minimum_health(M);
 																if(Health < M){
 																	-+attack(Pos);
 																	-+minimum_health(Health);
-																	-+state(standing)
+																	-+state(standing);
 																}
 															}
 														}
 														-+iterador(C+1);
+													 }
+													 if(not state(standing) & not current_task(task(_, "TASK_WALKING_PATH", _, _, _))){
+													 	-+state(standing);
 													 }.
 											
-+!perform_look_action <- ?my_position(X,Y,Z);
++!perform_look_action <- !check_flanqueo;
+						 ?my_position(X,Y,Z);
 						 .my_team("ALLIED", E1);
 						 .concat("goto(",X,",",Y,",",Z,")", Content1);
 						 .send_msg_with_conversation_id(E1, tell, Content1, "INT").
+
+						 
++!check_flanqueo: flanqueo <- ?my_position(X,Y,Z);
+							  !distance(pos(X,Y,Z), pos(230,0,150));
+							  ?distance(Dist);
+							  if(Dist < 10){
+							  		-flanqueo;
+							  }.
+							  
++!check_flanqueo.
 						 
    /// <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR PERFORM_LOOK_ACTION GOES HERE.") }. 
 
@@ -262,14 +277,25 @@ if (Length > 0) {
  *
  */
 
+ 
++!update_targets: flanqueo & not attack(Pos) <- ?manager(M);
+							  					!add_task(task(3000, "TASK_GOTO_POSITION", M, pos(230,0,150), "")).
+							  
 //Atacamos al enemigo.
 +!update_targets: attack(Pos) & not objectivePackTaken(on) <-   ?current_task(task(C_priority, _, _, _, _));
-								 								?manager(M);
-																!add_task(task(C_priority+1,"TASK_ATTACK", M, Pos, "")).
+																?manager(M);
+																?my_position(X,Y,Z);
+																!distance(pos(X,Y,Z),Pos);
+																?distance(Dist);
+																if(Dist > 3){
+																	!add_task(task(C_priority+1,"TASK_ATTACK", M, Pos, ""));
+																}else{
+																	!add_task(task(C_priority+1,"TASK_ATTACK", M, pos(X,Y,Z), ""));
+																}.
 
-+!update_targets: flanqueo <- -flanqueo;
-							  ?manager(M);
-							  !add_task(task(3000, "TASK_GOTO_POSITION", M, pos(230,0,150), "")).
++!update_targets: objectivePackTaken(on) <- ?objective(X,Y,Z);
+											?manager(M);
+											!add_task(task(3500, "TASK_GET_OBJECTIVE", M, pos(X,Y,Z), "")).
 					
 //Si no, vamos al objetivo.
 +!update_targets <- ?tasks(Tasks);
