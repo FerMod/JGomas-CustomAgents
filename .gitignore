@@ -20,5 +20,6 @@ APDescription.txt
 JGOMAS_Statistics.txt
 MTPs-Main-Container.txt
 
-# Metadata files
+# Metadata files and temp files
 **.DS_Store
+**~

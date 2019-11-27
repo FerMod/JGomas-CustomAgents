@@ -8,9 +8,11 @@ team("ALLIED").
 // Type of troop.
 type("CLASS_SOLDIER").
 
+//Array with the positions of the searching process.
+locating_positions([pos(220,0,30), pos(30,0,220), pos(220,0,220), pos(30,0,30)]).
 
-
-
+//Counts the current state of the searching process.
+cont(0).
 
 { include("jgomas.asl") }
 
@@ -41,55 +43,53 @@ type("CLASS_SOLDIER").
 * 
 */  
 +!get_agent_to_aim
-    <-
-    ?debug(Mode); if (Mode<=2) { .println("Looking for agents to aim."); }
-    ?fovObjects(FOVObjects);
-    .length(FOVObjects, Length);
+<-  ?debug(Mode); if (Mode<=2) { .println("Looking for agents to aim."); }
+?fovObjects(FOVObjects);
+.length(FOVObjects, Length);
 
-    ?debug(Mode); if (Mode<=1) { .println("El numero de objetos es:", Length); }
+?debug(Mode); if (Mode<=1) { .println("El numero de objetos es:", Length); }
 
-    if (Length > 0) {
-        +bucle(0);
+if (Length > 0) {
+    +bucle(0);
+    
+    -+aimed("false");
+    
+    while (aimed("false") & bucle(X) & (X < Length)) {
         
-        -+aimed("false");
+        //.println("En el bucle, y X vale:", X);
         
-        while (aimed("false") & bucle(X) & (X < Length)) {
+        .nth(X, FOVObjects, Object);
+        // Object structure
+        // [#, TEAM, TYPE, ANGLE, DISTANCE, HEALTH, POSITION ]
+        .nth(2, Object, Type);
+        
+        ?debug(Mode); if (Mode<=2) { .println("Objeto Analizado: ", Object); }
+        
+        if (Type > 1000) {
+            ?debug(Mode); if (Mode<=2) { .println("I found some object."); }
+        } else {
+            // Object may be an enemy
+            .nth(1, Object, Team);
+            ?my_formattedTeam(MyTeam);
             
-            //.println("En el bucle, y X vale:", X);
-            
-            .nth(X, FOVObjects, Object);
-            // Object structure
-            // [#, TEAM, TYPE, ANGLE, DISTANCE, HEALTH, POSITION ]
-            .nth(2, Object, Type);
-            
-            ?debug(Mode); if (Mode<=2) { .println("Objeto Analizado: ", Object); }
-            
-            if (Type > 1000) {
-                ?debug(Mode); if (Mode<=2) { .println("I found some object."); }
-            } else {
-                // Object may be an enemy
-                .nth(1, Object, Team);
-                ?my_formattedTeam(MyTeam);
-                
-                if (Team == 200) {  // Only if I'm ALLIED
-                    
-                    ?debug(Mode); if (Mode<=2) { .println("Aiming an enemy. . .", MyTeam, " ", .number(MyTeam) , " ", Team, " ", .number(Team)); }
-                    +aimed_agent(Object);
-                    -+aimed("true");
-                    
-                }
+            if (Team == 200) {  // Only if I'm ALLIED
+				
+                ?debug(Mode); if (Mode<=2) { .println("Aiming an enemy. . .", MyTeam, " ", .number(MyTeam) , " ", Team, " ", .number(Team)); }
+                +aimed_agent(Object);
+                -+aimed("true");
                 
             }
             
-            -+bucle(X+1);
-            
         }
         
+        -+bucle(X+1);
         
     }
+    
+    
+}
 
-    -bucle(_);
-    .
+-bucle(_).
 
 /////////////////////////////////
 //  LOOK RESPONSE
@@ -131,11 +131,11 @@ type("CLASS_SOLDIER").
 
         if (AimedAgentTeam == 200) {
     
-            .nth(6, AimedAgent, NewDestination);
-            ?debug(Mode); if (Mode<=1) { .println("NUEVO DESTINO DEBERIA SER: ", NewDestination); }
-        
-        }
-    .
+                .nth(6, AimedAgent, NewDestination);
+                ?debug(Mode); if (Mode<=1) { .println("NUEVO DESTINO DEBERIA SER: ", NewDestination); }
+          
+            }
+ .
 
 /**
 * Action to do when the agent is looking at.
@@ -145,8 +145,44 @@ type("CLASS_SOLDIER").
 * <em> It's very useful to overload this plan. </em>
 * 
 */
-+!perform_look_action .
-   /// <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR PERFORM_LOOK_ACTION GOES HERE.") }. 
+
+//Prints information about the agent and checks if the crazy agent (FIELDOPS type) is in the FOV. If it is, adds a "go_to_crazy" belief and returns to the "standing" state.
++!perform_look_action <- !position;
+						 -go_to_crazy(_);
+						 ?fovObjects(FOVObjects);
+						 .length(FOVObjects, L);
+						 +iterador(0);
+						 while(not go_to_crazy(_) & iterador(C) & C < L){
+							.nth(C, FOVObjects, Objeto);
+							.nth(1, Objeto, Equipo);
+							.nth(2, Objeto, Type);
+							if(Equipo == 200 & Type == 4){
+								.nth(6, Objeto, Pos);
+								+go_to_crazy(Pos);
+								-+state(standing);
+							}
+							-+iterador(C+1);
+						 }.					 
+						
+
+//Prints the position of the agent, the distance to the flag and the distance to the base (Initial position).
++!position <- ?my_position(X,Y,Z);
+			  ?initial_indicator(IX,IY,IZ);
+			  !distance(pos(X,Y,Z), pos(IX,IY,IZ));
+			  ?distance(Dist2);
+			  !check_flag(X,Y,Z);
+			  ?distance(Dist1);
+			  .println("Position: (x:", X, ", y:", Y, " z:", Z,")\nDistance to the flag:",Dist1,"\nDistance to initial position:",Dist2).
+			  
+
+//If the agent has the flag, distance to the flag 0.
++!check_flag(X,Y,Z) : objectivePackTaken(on) <- -+distance(0).
+
+//If the agent doesn't have the flag, distance to the flag = distance to the objective.
++!check_flag(X,Y,Z) <- ?objective(OX,OY,OZ);
+					   !distance(pos(X,Y,Z), pos(OX,OY,OZ)).
+
+
 
 /**
 * Action to do if this agent cannot shoot.
@@ -179,13 +215,13 @@ type("CLASS_SOLDIER").
 /**  You can change initial priorities if you want to change the behaviour of each agent  **/
 +!setup_priorities
     <-  +task_priority("TASK_NONE",0);
-        +task_priority("TASK_GIVE_MEDICPAKS", 0);
+        +task_priority("TASK_GIVE_MEDICPAKS", 2000);
         +task_priority("TASK_GIVE_AMMOPAKS", 0);
         +task_priority("TASK_GIVE_BACKUP", 0);
         +task_priority("TASK_GET_OBJECTIVE",1000);
-        +task_priority("TASK_ATTACK", 1000);
+        +task_priority("TASK_ATTACK", 2500);
         +task_priority("TASK_RUN_AWAY", 1500);
-        +task_priority("TASK_GOTO_POSITION", 750);
+        +task_priority("TASK_GOTO_POSITION", 2400);
         +task_priority("TASK_PATROLLING", 500);
         +task_priority("TASK_WALKING_PATH", 1750).   
 
@@ -204,8 +240,23 @@ type("CLASS_SOLDIER").
  *
  */
 
-+!update_targets
-	<-	?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR UPDATE_TARGETS GOES HERE.") }.
+//If the crazy agent is in the FOV, attacks him.
++!update_targets: go_to_crazy(Pos) <- ?manager(M);
+									  !add_task(task("TASK_ATTACK", M, Pos, "")).
+
+//If it's not, goes to the next position of the searching process.
++!update_targets <- ?cont(N);
+					?locating_positions(Positions);
+					.nth(N, Positions, Pos);
+					?manager(M);
+					!add_task(task("TASK_GOTO_POSITION", M, Pos, ""));
+					.length(Positions, L);
+					if(N < L-1){
+						NewN = N + 1;
+					}else{
+						NewN = 0;
+					}
+					-+cont(NewN).
 	
 	
 	
@@ -315,8 +366,10 @@ type("CLASS_SOLDIER").
 //  Initialize variables
 /////////////////////////////////
 
+//Stores the initial position of the agent in the "initial_indicator" belief.
 +!init
-   <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR init GOES HERE.")}.  
+   <- 	?my_position(X,Y,Z);
+   		+initial_indicator(X,Y,Z).  
 
 
 
