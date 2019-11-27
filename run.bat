@@ -1,9 +1,10 @@
 @echo off
 cls
 
-set AGENTS=default
 rem set AGENTS=task5
 rem set AGENTS=tasks
+rem set AGENTS=default
+set AGENTS=homework4
 
 set AGENTS_PATH=.\agents\%AGENTS%
 
