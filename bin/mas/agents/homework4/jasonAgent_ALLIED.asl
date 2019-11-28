@@ -78,7 +78,7 @@ if (Length > 0) {
                 -+aimed("true");
                 
             }else{
-				//Si tenemos un compañero en el punto de mira, no disparamos.
+				//If we have an ally in the point of view, we don't shoot.
 				.nth(4, Object, Dis);
 				?current_task(task(_, _, _, PosObj, _));
 				?my_position(MX,MY,MZ);
@@ -102,6 +102,7 @@ if (Length > 0) {
 
 -bucle(_).
 
+//Calculates the cosine between two vectors. It is used to verify if an agent is in the point of view.
 +!cosangle(pos(X1,Y1,Z1), pos(X2,Y2,Z2), pos(X3,Y3,Z3)) <- X12 = X2-X1;
 													   	   Y12 = Y2-Y1;
 													       Z12 = Z2-Z1;
@@ -167,7 +168,8 @@ if (Length > 0) {
 * 
 */
 
-//Si no tenemos la bandera atacamos al enemigo con menos vida en el FOV (O al medico).
+//If we don't have the flag, we check our FOV to find an enemy to attack (That is closer than 30 units). 
+//We attack the medic or the agent that has lower health.
 +!perform_look_action: not objectivePackTaken(on) <- !check_flanqueo;
 													 -attack(_);
 													 -+minimum_health(1000);
@@ -202,14 +204,17 @@ if (Length > 0) {
 													 if(not state(standing) & not current_task(task(_, "TASK_WALKING_PATH", _, _, _))){
 													 	-+state(standing);
 													 }.
-											
+													 
+													 
+//If we have the flag, we send messages to the other ALLIES to tell them our position.											
 +!perform_look_action <- !check_flanqueo;
 						 ?my_position(X,Y,Z);
 						 .my_team("ALLIED", E1);
 						 .concat("goto(",X,",",Y,",",Z,")", Content1);
 						 .send_msg_with_conversation_id(E1, tell, Content1, "INT").
 
-						 
+				
+//We check if the agents have arrive to the flanking position.
 +!check_flanqueo: flanqueo <- ?my_position(X,Y,Z);
 							  !distance(pos(X,Y,Z), pos(230,0,150));
 							  ?distance(Dist);
@@ -277,11 +282,11 @@ if (Length > 0) {
  *
  */
 
- 
+//If there is no enemy to attack and we are flanking, we go to the flanking position.
 +!update_targets: flanqueo & not attack(Pos) <- ?manager(M);
 							  					!add_task(task(3000, "TASK_GOTO_POSITION", M, pos(230,0,150), "")).
 							  
-//Atacamos al enemigo.
+//If we don't have the flag an there is an enemy to attack, we attack him.
 +!update_targets: attack(Pos) & not objectivePackTaken(on) <-   ?current_task(task(C_priority, _, _, _, _));
 																?manager(M);
 																?my_position(X,Y,Z);
@@ -293,11 +298,12 @@ if (Length > 0) {
 																	!add_task(task(C_priority+1,"TASK_ATTACK", M, pos(X,Y,Z), ""));
 																}.
 
+//If we have the flag, we go to the base with the highest priority.
 +!update_targets: objectivePackTaken(on) <- ?objective(X,Y,Z);
 											?manager(M);
 											!add_task(task(3500, "TASK_GET_OBJECTIVE", M, pos(X,Y,Z), "")).
 					
-//Si no, vamos al objetivo.
+//Otherwise, we go to the objective. If we were attacking an agent, we stop attacking.
 +!update_targets <- ?tasks(Tasks);
 					if(.member(task(_, "TASK_ATTACK", _, _, _), Tasks)){
 						.delete(task(_, "TASK_ATTACK", _, _, _), Tasks, NewTaskList);
@@ -409,6 +415,11 @@ if (Length > 0) {
    <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR cfa_refuse GOES HERE.")};
       -cfa_refuse.
 
+/////////////////////////////////
+//  Manage communications
+/////////////////////////////////
+
+//If we recibe a message from the agent that has the flag, we update the position of the objective.
 +goto(X,Y,Z)[source(A)] <-  -+objective(X,Y,Z);
 							-+state(standing);
 							-goto(X,Y,Z)[source(A)].
@@ -417,6 +428,7 @@ if (Length > 0) {
 //  Initialize variables
 /////////////////////////////////
 
+//We initialize the agent with the "flanqueo" belief. The agent will flank the opponents.
 +!init
    <- +flanqueo.  
 
