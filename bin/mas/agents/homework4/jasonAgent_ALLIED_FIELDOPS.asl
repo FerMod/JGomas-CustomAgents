@@ -56,6 +56,10 @@ if (Length > 0) {
 	
     while (not friendly_fire & bucle(X) & (X < Length)) {
         
+		!rotatePoint(90.0,pos(MX,MY,MZ),PosObj);
+		?rotatePoint(Rotated);
+		.println("----- Rotated point: ", Rotated);
+
         //.println("En el bucle, y X vale:", X);
         
         .nth(X, FOVObjects, Object);
@@ -113,6 +117,20 @@ if (Length > 0) {
 													       ProdMod = math.sqrt(X12*X12+Y12*Y12+Z12*Z12)*math.sqrt(X13*X13+Y13*Y13+Z13*Z13);
 													       Cosangle = ProdEsc/ProdMod;
 													       -+cosangle(Cosangle).
+
++!rotatePoint(Angle, pos(PointX,PointY,PointZ), pos(CenterX,CenterY,CenterZ)) <-
+	Angle = Angle * (math.pi/180);
+	.println("---- Angle: ", Angle);
+	RotatedX = math.cos(Angle) * (PointX - CenterX) - math.sin(Angle) * (PointZ - CenterZ) + PointX;
+	RotatedY = PointY;
+	RotatedZ = math.sin(Angle) * (PointX - CenterX) + math.cos(Angle) * (PointZ - CenterZ) + CenterZ;
+	-+rotatePoint(pos(RotatedX,PointY,RotatedZ)).
+	/*
+	https://www.gamefromscratch.com/post/2012/11/24/GameDev-math-recipes-Rotating-one-point-around-another-point.aspx
+	angle = (angle) * (math.pi/180); // Convert to radians
+	var rotatedX = Math.cos(angle) * (point.x - center.x) - Math.sin(angle) * (point.y-center.y) + center.x;
+	var rotatedY = Math.sin(angle) * (point.x - center.x) + Math.cos(angle) * (point.y - center.y) + center.y;
+	*/
 
 /////////////////////////////////
 //  LOOK RESPONSE
@@ -259,7 +277,8 @@ if (Length > 0) {
 /////////////////////////////////
 //  SETUP PRIORITIES
 /////////////////////////////////
-/**  You can change initial priorities if you want to change the behaviour of each agent  **/+!setup_priorities
+/**  You can change initial priorities if you want to change the behaviour of each agent  **/
++!setup_priorities
     <-  +task_priority("TASK_NONE",0);
         +task_priority("TASK_GIVE_MEDICPAKS", 0);
         +task_priority("TASK_GIVE_AMMOPAKS", 3000);
