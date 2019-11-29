@@ -172,12 +172,14 @@ if (Length > 0) {
 //If we don't have the flag, we check our FOV to find an enemy to attack (That is closer than 30 units). 
 //We attack the medic or the agent that has lower health.
 +!perform_look_action: not objectivePackTaken(on) <- -attack(_);
+													 -bandera;
 													 -+minimum_health(1000);
 													 ?fovObjects(FOVObjects);
 													 .length(FOVObjects, L);
 													 -+iterador(0);
 													 while(iterador(C) & C < L){
 														.nth(C, FOVObjects, Objeto);
+														!check_flag(Objeto);
 														.nth(1, Objeto, Equipo);
 														.nth(6, Objeto, Pos);
 														?my_position(X,Y,Z);
@@ -203,6 +205,9 @@ if (Length > 0) {
 													 }
 													 if(not state(standing) & not current_task(task(_, "TASK_WALKING_PATH", _, _, _))){
 													 	-+state(standing);
+													 }
+													 if(not bandera){
+													 	-+objective(224,0,224);
 													 }.
 
 //If we have the flag, we send messages to the other ALLIES to tell them our position.
@@ -211,6 +216,19 @@ if (Length > 0) {
 						 .concat("goto(",X,",",Y,",",Z,")", Content1);
 						 .send_msg_with_conversation_id(E1, tell, Content1, "INT"). 
 
++!check_flag(Objeto) <- ?my_position(X,Y,Z);
+						?objective(OX,OY,OZ);
+						!distance(pos(X,Y,Z), pos(OX,OY,OZ));
+						?distance(Dist);
+						if(Dist < 30 & current_task(task(_, "TASK_GET_OBJECTIVE", _, _, _))){
+							.nth(2, Objeto, Type);
+							if(Type == 1003){
+									.println("VEO BANDERA");
+									+bandera;
+							}
+					    }else{
+							+bandera;
+						}.
 /**
 * Action to do if this agent cannot shoot.
 * 
