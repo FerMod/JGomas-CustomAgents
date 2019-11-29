@@ -6,6 +6,7 @@
     -+modd(Res);
 .
 
+// https://introcs.cs.princeton.edu/java/13flow/Sin.java
 +!sinn(X)
 <-
     // Convert x to an angle between -2 PI and 2 PI
@@ -20,7 +21,7 @@
     Sum  = 0.0; // sum of first i terms in taylor series
 
     I = 1;
-    while(Term == 0.0) {
+    while(not (Term == 0.0)) {
         Term = Term * (X/I);
         !modd(I,4);
         ?modd(ModResult);
@@ -35,6 +36,7 @@
     -+sinn(Sum);
 .
 
+// https://www.quora.com/How-do-you-convert-sin-to-cos
 +!coss(X)
 <-
     !sinn(X + math.pi);
