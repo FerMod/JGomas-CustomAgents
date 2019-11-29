@@ -9,7 +9,7 @@ team("AXIS").
 type("CLASS_SOLDIER").
 
 // Value of "closeness" to the Flag, when patrolling in defense
-patrollingRadius(64).
+patrollingRadius(30).
 
 
 
@@ -42,6 +42,8 @@ patrollingRadius(64).
  */
 +!get_agent_to_aim
     <-  ?debug(Mode); if (Mode<=2) { .println("Looking for agents to aim."); }
+        ?health_aux(H);
+        //Objetos a la vista del agente
         ?fovObjects(FOVObjects);
         .length(FOVObjects, Length);
         
@@ -51,40 +53,108 @@ patrollingRadius(64).
 		    +bucle(0);
     
             -+aimed("false");
-    
+
             while (aimed("false") & bucle(X) & (X < Length)) {
   
                 //.println("En el bucle, y X vale:", X);
                 
-                .nth(X, FOVObjects, Object);
+                //Sacamos el elemento x en la variable Object de la lista FOVObjects
+                .nth(X, FOVObjects, Object);//Es el Xabo objeto que vemos
                 // Object structure 
                 // [#, TEAM, TYPE, ANGLE, DISTANCE, HEALTH, POSITION ]
+                //Sacamos el segundo elemento de la lista Object y lo guardamos en Type
                 .nth(2, Object, Type);
+
+                //Get the pos
+                .nth(6, Object, pos(Ix,Y,Iz));
                 
                 ?debug(Mode); if (Mode<=2) { .println("Objeto Analizado: ", Object); }
                 
                 if (Type > 1000) {
-                    ?debug(Mode); if (Mode<=2) { .println("I found some object."); }
+                  ?bool(B);
+                  //We locate the flag
+                  //We update the position of the flag, maybe it has moved
+                  -+objective(Ix,Y,Iz);
+                  //.println("Flag seen at",Ix, " : ",Y ," : ", Iz);
+                  /*if(B==0){
+                    +pos_flag(Ix,Y,Iz);
+                    .println("Flag at: ",Ix, " : ", Iz);
+                    -+bool(1);
+                  }*/
                 } else {
                     // Object may be an enemy
                     .nth(1, Object, Team);
                     ?my_formattedTeam(MyTeam);
-          
+                    //We located an enemy agent
                     if (Team == 100) {  // Only if I'm AXIS
+                        //-----------------------------------------------------
+                        .nth(5, Object, Health);
+                        +enemy_less_health(Object);
+                        .nth(2, Object, Type);
+                        +type_enemy(Type);
+                        //The object is an enemy
+                        -+is_enemy(1);
+                        +pos_enemy(Ix,Y,Iz);
+                        //-----------------------------------------------------
 				
- 					    ?debug(Mode); if (Mode<=2) { .println("Aiming an enemy. . .", MyTeam, " ", .number(MyTeam) , " ", Team, " ", .number(Team)); }
-					    +aimed_agent(Object);
-                        -+aimed("true");
+             					  ?debug(Mode); if (Mode<=2) { .println("Aiming an enemy. . .", MyTeam, " ", .number(MyTeam) , " ", Team, " ", .number(Team)); }
+            					  //+aimed_agent(Object);
+                        //-+aimed("true");
+                        //----------------------------------------------------------------
+                        //If the agent is on the position of the flag, everybody goes there
+                        ?objective(Ox,Oy,Oz);
+                        //.println("Position of the objective: ",Ox, " : ",Oy, " : ",Oz);
+                        //.println("Position of the enemy: ",Ix, " : ",Oy, " : ",Iz);
+                        !distance( pos( Ix, Y, Iz ), pos ( Ox, Y, Oz ));
+                        ?distance( D );
+                        if(D<5){
+                          .println("FLAG TAKEN!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                          .my_team("AXIS", E3);
+                          ?type_enemy(TE);
+                          .concat("c_flagTaken(",Ix, ", ", Y, ", ", Iz, ")", Content3);
+                          //Tell AXIS where to aim
+                          .send_msg_with_conversation_id(E3, tell, Content3, "c_flagTaken");
+                          ?current_task(task(C_priority, _, _, _, _));
+                          !add_task(task(C_priority+1,"TASK_GOTO_POSITION", M, pos(Ix, Y, Iz), ""));
+                        }
+                        //If the enemy is on the same position as the flag, kill him
 
+                        //We store the agent with less health
+                        if (health>0){
+                          if (Health<=H){
+                            -+health_aux(Health);
+                            -+enemy_less_health(Object);
+                            -+pos_enemy(Ix,Y,Iz);
+                            -+type_enemy(Type);
+                          }
+                        }
+                        //else{.println("Hay enemigos con menos vida");}
+                        //----------------------------------------------------------------      
                     }
-                    
                 }
-             
                 -+bucle(X+1);
                 
             }
-                     
-       
+            ?is_enemy(B);
+            //B==1, there is an enemy to aim, B==0, no enemy
+            if(B>0){
+              ?enemy_less_health(Object);
+              +aimed_agent(Object);
+              -+aimed("true");
+              ?pos_enemy(XE,YE,ZE);
+              .my_team("AXIS", E3);
+              .println("----------------------------COMMANDER--------------------------");
+              .println("AIM HERE: ",XE,"  :", YE, "  :", ZE);
+              //?type_enemy(TE);
+              //.println("Aim to:", TE);
+              .concat("c_aimEnemy(",XE, ", ", YE, ", ", ZE, ")", Content3);
+              //Tell AXIS where to aim
+              .send_msg_with_conversation_id(E3, tell, Content3, "c_aimEnemy");
+              ?current_task(task(C_priority, _, _, _, _));
+              !add_task(task(C_priority+1,"TASK_ATTACK", M, pos(XE, YE, ZE), ""));
+            }
+  
+  
         }
 
      -bucle(_).
@@ -128,16 +198,26 @@ patrollingRadius(64).
         .nth(1, AimedAgent, AimedAgentTeam);
         ?debug(Mode); if (Mode<=2) { .println("BAJO EL PUNTO DE MIRA TENGO A ALGUIEN DEL EQUIPO ", AimedAgentTeam); }
         ?my_formattedTeam(MyTeam);
+        //-------------------------------------------------------------------
+        /*.nth(5, AimedAgent, Health);
+        if (AimedAgentTeam == 100){
+          if(Health>1){
+            .println("He entrado en bucle de aim");
+            ?my_ammo(A);
+            !shot(A);
+            !perform_aim_action2;}
+          }*/
+        //-------------------------------------------------------------------
 
 
         if (AimedAgentTeam == 100) {
         
             .nth(6, AimedAgent, NewDestination);
             ?debug(Mode); if (Mode<=1) { .println("NUEVO DESTINO MARCADO: ", NewDestination); }
-            //update_destination(NewDestination);
+            update_destination(NewDestination);
         }
         .
-    
+
 /**
  * Action to do when the agent is looking at.
  *
@@ -158,6 +238,7 @@ patrollingRadius(64).
  * <em> It's very useful to overload this plan. </em>
  *
  */
+ //Probar a intentar que busque municion
 +!perform_no_ammo_action .
 /// <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR PERFORM_NO_AMMO_ACTION GOES HERE.") }.
 
@@ -260,8 +341,8 @@ patrollingRadius(64).
        ?my_ammo_threshold(At);
        ?my_ammo(Ar);
        
-       if (Ar <= At) { 
-          ?my_position(X, Y, Z);
+       if (Ar <= 75) { 
+        ?my_position(X, Y, Z);
           
          .my_team("fieldops_AXIS", E1);
          //.println("Mi equipo intendencia: ", E1 );
@@ -274,7 +355,7 @@ patrollingRadius(64).
        ?my_health_threshold(Ht);
        ?my_health(Hr);
        
-       if (Hr <= Ht) {  
+       if (Hr <= 75) {  
           ?my_position(X, Y, Z);
           
          .my_team("medic_AXIS", E2);
@@ -314,5 +395,10 @@ patrollingRadius(64).
 /////////////////////////////////
 
 +!init
-   <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR init GOES HERE.")}.  
+   <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR init GOES HERE.")}
+   //?my_health(H);
+   +health_aux(100);
+   +is_enemy(0);
+   +bool(0);
+   .  
 

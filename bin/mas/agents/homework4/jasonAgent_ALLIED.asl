@@ -172,12 +172,14 @@ if (Length > 0) {
 //We attack the medic or the agent that has lower health.
 +!perform_look_action: not objectivePackTaken(on) <- !check_flanqueo;
 													 -attack(_);
+													 -bandera;
 													 -+minimum_health(1000);
 													 ?fovObjects(FOVObjects);
 													 .length(FOVObjects, L);
 													 -+iterador(0);
 													 while(iterador(C) & C < L){
 														.nth(C, FOVObjects, Objeto);
+														!check_flag(Objeto);
 														.nth(1, Objeto, Equipo);
 														.nth(6, Objeto, Pos);
 														?my_position(X,Y,Z);
@@ -203,6 +205,9 @@ if (Length > 0) {
 													 }
 													 if(not state(standing) & not current_task(task(_, "TASK_WALKING_PATH", _, _, _))){
 													 	-+state(standing);
+													 }
+													 if(not bandera){
+													 	-+objective(224,0,224);
 													 }.
 													 
 													 
@@ -223,7 +228,22 @@ if (Length > 0) {
 							  }.
 							  
 +!check_flanqueo.
-						 
+
++!check_flag(Objeto) <- ?my_position(X,Y,Z);
+						?objective(OX,OY,OZ);
+						!distance(pos(X,Y,Z), pos(OX,OY,OZ));
+						?distance(Dist);
+						?tasks(T);
+						if(Dist < 30 & current_task(task(_, "TASK_GET_OBJECTIVE", _, _, _))){
+							.nth(2, Objeto, Type);
+							if(Type == 1003){
+									.println("VEO BANDERA");
+									+bandera;
+							}
+					    }else{
+							+bandera;
+						}.
+			   
    /// <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR PERFORM_LOOK_ACTION GOES HERE.") }. 
 
 /**
