@@ -8,7 +8,9 @@ pushd %~dp0
 REM set agent_config=task5
 REM set agent_config=tasks
 REM set agent_config=default
-set agent_config=homework4
+REM set agent_config=homework4
+set agent_config=test
+
 
 echo.
 echo Runing agent config '%agent_config%'.
