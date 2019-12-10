@@ -15,7 +15,7 @@ type("CLASS_FIELDOPS").
 
 { include("jgomas.asl") }
 
-{ include("math.asl") }
+
 
 
 // Plans
@@ -28,8 +28,8 @@ type("CLASS_FIELDOPS").
 *******************************/
 
 /////////////////////////////////
-//  GET AGENT TO AIM
-/////////////////////////////////
+//  GET AGENT TO AIM 
+/////////////////////////////////  
 /**
  * Calculates if there is an enemy at sight.
  *
@@ -39,7 +39,7 @@ type("CLASS_FIELDOPS").
  * enemy found. Otherwise, the return value is aimed("false")
  *
  * <em> It's very useful to overload this plan. </em>
- *
+ * 
  */
 +!get_agent_to_aim
 <-  ?debug(Mode); if (Mode<=2) { .println("Looking for agents to aim."); }
@@ -50,21 +50,21 @@ type("CLASS_FIELDOPS").
 
 if (Length > 0) {
     +bucle(0);
-
+    
     -+aimed("false");
 	-friendly_fire;
-
+	
     while (not friendly_fire & bucle(X) & (X < Length)) {
-
+        
         //.println("En el bucle, y X vale:", X);
-
+        
         .nth(X, FOVObjects, Object);
         // Object structure
         // [#, TEAM, TYPE, ANGLE, DISTANCE, HEALTH, POSITION ]
         .nth(2, Object, Type);
-
+        
         ?debug(Mode); if (Mode<=2) { .println("Objeto Analizado: ", Object); }
-
+        
         if (Type > 1000) {
             ?debug(Mode); if (Mode<=2) { .println("I found some object."); }
         } else {
@@ -72,11 +72,11 @@ if (Length > 0) {
             .nth(1, Object, Team);
             ?my_formattedTeam(MyTeam);
             if (Team == 200) {  // Only if I'm ALLIED
-
+				
                 ?debug(Mode); if (Mode<=2) { .println("Aiming an enemy. . .", MyTeam, " ", .number(MyTeam) , " ", Team, " ", .number(Team)); }
                 -+aimed_agent(Object);
                 -+aimed("true");
-
+                
             }else{
 				//If we have an ally in the point of view, we don't shoot.
 				.nth(4, Object, Dis);
@@ -90,14 +90,14 @@ if (Length > 0) {
 					-aimed_agent(_);
 					+friendly_fire;
 				}
-			}
+			}   
         }
-
+        
         -+bucle(X+1);
-
+        
     }
-
-
+    
+    
 }
 
 -bucle(_).
@@ -114,30 +114,6 @@ if (Length > 0) {
 													       Cosangle = ProdEsc/ProdMod;
 													       -+cosangle(Cosangle).
 
-
-+!rotatePoint(Angle, pos(PointX,PointY,PointZ), pos(CenterX,CenterY,CenterZ))
-<-
-	.println("---- Angle: ", Angle);
-    !sinn(Angle);
-    ?sinn(SinAngle);
-    .println("---- SinAngle: ", SinAngle);
-    !coss(Angle);
-    ?coss(CosAngle);
-    .println("---- CosAngle: ", CosAngle);
-	.println("---- PointX: ", PointX, "PointY", PointY, "PointZ", math);
-	//NewX = CenterX + (PointX - CenterX) * math.cos(Angle) - (PointZ - CenterZ) * math.sin(Angle);
-	//NewZ = CenterZ + (PointX - CenterX) * math.sin(Angle) + (PointZ - CenterZ) * math.cos(Angle);
-	NewX = CenterX + (PointX - CenterX) * CosAngle - (PointZ - CenterZ) * SinAngle;
-	NewZ = CenterZ + (PointX - CenterX) * SinAngle + (PointZ - CenterZ) * CosAngle;
-	.println("---- NewX: ", NewX, "NewY", PointY, "NewZ", NewZ);
-	-+rotatePoint(pos(NewX, NewY, NewZ));
-.
-	/*
-	https://stackoverflow.com/a/12161405/4134376
-	newX = centerX + (point2x-centerX)*Math.cos(x) - (point2y-centerY)*Math.sin(x);
-	newY = centerY + (point2x-centerX)*Math.sin(x) + (point2y-centerY)*Math.cos(x);
-	*/
-
 /////////////////////////////////
 //  LOOK RESPONSE
 /////////////////////////////////
@@ -146,54 +122,54 @@ if (Length > 0) {
         .length(FOVObjects, Length);
         if (Length > 0) {
             ///?debug(Mode); if (Mode<=1) { .println("HAY ", Length, " OBJETOS A MI ALREDEDOR:\n", FOVObjects); }
-        };
+        };    
         -look_response(_)[source(M)];
         -+fovObjects(FOVObjects);
         //.//;
         !look.
-
-
+      
+        
 /////////////////////////////////
 //  PERFORM ACTIONS
 /////////////////////////////////
 /**
 * Action to do when agent has an enemy at sight.
-*
+* 
 * This plan is called when agent has looked and has found an enemy,
 * calculating (in agreement to the enemy position) the new direction where
 * is aiming.
 *
 *  It's very useful to overload this plan.
-*
+* 
 */
 +!perform_aim_action
-<-  // Aimed agents have the following format:
-	// [#, TEAM, TYPE, ANGLE, DISTANCE, HEALTH, POSITION ]
-	?aimed_agent(AimedAgent);
-	?debug(Mode); if (Mode<=1) { .println("AimedAgent ", AimedAgent); }
-	.nth(1, AimedAgent, AimedAgentTeam);
-	?debug(Mode); if (Mode<=2) { .println("BAJO EL PUNTO DE MIRA TENGO A ALGUIEN DEL EQUIPO ", AimedAgentTeam);             }
-	?my_formattedTeam(MyTeam);
+    <-  // Aimed agents have the following format:
+        // [#, TEAM, TYPE, ANGLE, DISTANCE, HEALTH, POSITION ]
+        ?aimed_agent(AimedAgent);
+        ?debug(Mode); if (Mode<=1) { .println("AimedAgent ", AimedAgent); }
+        .nth(1, AimedAgent, AimedAgentTeam);
+        ?debug(Mode); if (Mode<=2) { .println("BAJO EL PUNTO DE MIRA TENGO A ALGUIEN DEL EQUIPO ", AimedAgentTeam);             }
+        ?my_formattedTeam(MyTeam);
 
 
-	if (AimedAgentTeam == 200) {
-
-			.nth(6, AimedAgent, NewDestination);
-			?debug(Mode); if (Mode<=1) { .println("NUEVO DESTINO DEBERIA SER: ", NewDestination); }
-
-		}
-.
+        if (AimedAgentTeam == 200) {
+    
+                .nth(6, AimedAgent, NewDestination);
+                ?debug(Mode); if (Mode<=1) { .println("NUEVO DESTINO DEBERIA SER: ", NewDestination); }
+          
+            }
+ .
 
 /**
 * Action to do when the agent is looking at.
 *
 * This plan is called just after Look method has ended.
-*
+* 
 * <em> It's very useful to overload this plan. </em>
-*
+* 
 */
 
-//If we don't have the flag, we check our FOV to find an enemy to attack (That is closer than 30 units).
+//If we don't have the flag, we check our FOV to find an enemy to attack (That is closer than 30 units). 
 //We attack the medic or the agent that has lower health.
 +!perform_look_action: not objectivePackTaken(on) <- -attack(_);
 													 -bandera;
@@ -234,7 +210,7 @@ if (Length > 0) {
 													 	-+objective(224,0,224);
 													 }.
 
-
+													 
 +!check_flag(Objeto) <- ?my_position(X,Y,Z);
 						?objective(OX,OY,OZ);
 						!distance(pos(X,Y,Z), pos(OX,OY,OZ));
@@ -248,7 +224,7 @@ if (Length > 0) {
 					    }else{
 							+bandera;
 						}.
-
+			   
 //If we have the flag, we send messages to the other ALLIES to tell them our position.
 +!perform_look_action <- ?my_position(X,Y,Z);
 						 .my_team("ALLIED", E1);
@@ -257,46 +233,43 @@ if (Length > 0) {
 
 /**
 * Action to do if this agent cannot shoot.
-*
+* 
 * This plan is called when the agent try to shoot, but has no ammo. The
 * agent will spit enemies out. :-)
-*
+* 
 * <em> It's very useful to overload this plan. </em>
-*
-*/
-+!perform_no_ammo_action .
+* 
+*/  
++!perform_no_ammo_action . 
    /// <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR PERFORM_NO_AMMO_ACTION GOES HERE.") }.
-
+    
 /**
      * Action to do when an agent is being shot.
-     *
+     * 
      * This plan is called every time this agent receives a messager from
      * agent Manager informing it is being shot.
-     *
+     * 
      * <em> It's very useful to overload this plan. </em>
-     *
+     * 
      */
 +!perform_injury_action .
-    ///<- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR PERFORM_INJURY_ACTION GOES HERE.") }.
-
+    ///<- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR PERFORM_INJURY_ACTION GOES HERE.") }. 
+        
 
 /////////////////////////////////
 //  SETUP PRIORITIES
 /////////////////////////////////
-/**  You can change initial priorities if you want to change the behaviour of each agent  **/
-+!setup_priorities
-<-
-	+task_priority("TASK_NONE",0);
-	+task_priority("TASK_GIVE_MEDICPAKS", 0);
-	+task_priority("TASK_GIVE_AMMOPAKS", 3000);
-	+task_priority("TASK_GIVE_BACKUP", 0);
-	+task_priority("TASK_GET_OBJECTIVE",1000);
-	+task_priority("TASK_ATTACK", 1000);
-	+task_priority("TASK_RUN_AWAY", 1500);
-	+task_priority("TASK_GOTO_POSITION", 750);
-	+task_priority("TASK_PATROLLING", 500);
-	+task_priority("TASK_WALKING_PATH", 1750);
-.
+/**  You can change initial priorities if you want to change the behaviour of each agent  **/+!setup_priorities
+    <-  +task_priority("TASK_NONE",0);
+        +task_priority("TASK_GIVE_MEDICPAKS", 0);
+        +task_priority("TASK_GIVE_AMMOPAKS", 3000);
+        +task_priority("TASK_GIVE_BACKUP", 0);
+        +task_priority("TASK_GET_OBJECTIVE",1000);
+        +task_priority("TASK_ATTACK", 1000);
+        +task_priority("TASK_RUN_AWAY", 1500);
+        +task_priority("TASK_GOTO_POSITION", 750);
+        +task_priority("TASK_PATROLLING", 500);
+        +task_priority("TASK_WALKING_PATH", 1750).   
 
 
 
@@ -314,7 +287,7 @@ if (Length > 0) {
  */
 
 //We wait for the flanking agents for 57 seconds.
-+!update_targets: not prepared <- .wait(1);
++!update_targets: not prepared <- .wait(57000);
 								  +prepared.
 
 //If we don't have the flag an there is an enemy to attack, we attack him (Unless we are giving ammopaks).
@@ -336,27 +309,19 @@ if (Length > 0) {
 +!update_targets: objectivePackTaken(on) <- ?objective(X,Y,Z);
 											?manager(M);
 											!add_task(task(3500, "TASK_GET_OBJECTIVE", M, pos(X,Y,Z), "")).
-
+											
 //Otherwise, we go to the objective. If we were attacking an agent, we stop attacking.
-+!update_targets
-<-
-	?tasks(Tasks);
-	if(.member(task(_, "TASK_ATTACK", _, _, _), Tasks)) {
-		.delete(task(_, "TASK_ATTACK", _, _, _), Tasks, NewTaskList);
-		-+tasks(NewTaskList);
-	}
-	?objective(X,Y,Z);
-	?manager(M);
-	!add_task(task(2500, "TASK_GET_OBJECTIVE", M, pos(X,Y,Z), ""));
-
-	?my_position(MyX,MyY,MyZ);
-	!rotatePoint(90,pos(MyX,MyY,MyZ),pos(X,Y,Z));
-	?rotatePoint(NewX, NewY, NewZ);
-	.println("----- Rotated point: ", Rotated);
-.
-
-
-
++!update_targets <- ?tasks(Tasks);
+					if(.member(task(_, "TASK_ATTACK", _, _, _), Tasks)){
+						.delete(task(_, "TASK_ATTACK", _, _, _), Tasks, NewTaskList);
+						-+tasks(NewTaskList);
+					}
+					?objective(X,Y,Z);
+					?manager(M);
+					!add_task(task(2500, "TASK_GET_OBJECTIVE", M, pos(X,Y,Z), "")).
+	
+	
+	
 /////////////////////////////////
 //  CHECK MEDIC ACTION (ONLY MEDICS)
 /////////////////////////////////
@@ -371,8 +336,8 @@ if (Length > 0) {
  +!checkMedicAction
      <-  -+medicAction(on).
       // go to help
-
-
+      
+      
 /////////////////////////////////
 //  CHECK FIELDOPS ACTION (ONLY FIELDOPS)
 /////////////////////////////////
@@ -403,29 +368,29 @@ if (Length > 0) {
  */
 +!performThresholdAction
        <-
-
+       
        ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR PERFORM_TRESHOLD_ACTION GOES HERE.") }
-
+       
        ?my_ammo_threshold(At);
        ?my_ammo(Ar);
-
-       if (Ar <= At) {
+       
+       if (Ar <= At) { 
           ?my_position(X, Y, Z);
-
+          
          .my_team("fieldops_ALLIED", E1);
          //.println("Mi equipo intendencia: ", E1 );
          .concat("cfa(",X, ", ", Y, ", ", Z, ", ", Ar, ")", Content1);
          .send_msg_with_conversation_id(E1, tell, Content1, "CFA");
-
-
+       
+       
        }
-
+       
        ?my_health_threshold(Ht);
        ?my_health(Hr);
-
-       if (Hr <= Ht) {
+       
+       if (Hr <= Ht) { 
           ?my_position(X, Y, Z);
-
+          
          .my_team("medic_ALLIED", E2);
          //.println("Mi equipo medico: ", E2 );
          .concat("cfm(",X, ", ", Y, ", ", Z, ", ", Hr, ")", Content2);
@@ -433,27 +398,27 @@ if (Length > 0) {
 
        }
        .
-
+       
 /////////////////////////////////
 //  ANSWER_ACTION_CFM_OR_CFA
 /////////////////////////////////
 
-
+    
 +cfm_agree[source(M)]
    <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR cfm_agree GOES HERE.")};
-      -cfm_agree.
+      -cfm_agree.  
 
 +cfa_agree[source(M)]
    <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR cfa_agree GOES HERE.")};
-      -cfa_agree.
+      -cfa_agree.  
 
 +cfm_refuse[source(M)]
    <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR cfm_refuse GOES HERE.")};
-      -cfm_refuse.
+      -cfm_refuse.  
 
 +cfa_refuse[source(M)]
    <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR cfa_refuse GOES HERE.")};
-      -cfa_refuse.
+      -cfa_refuse.  
 
 /////////////////////////////////
 //  Manage communications
@@ -468,5 +433,5 @@ if (Length > 0) {
 //  Initialize variables
 /////////////////////////////////
 
-+!init.
++!init.  
 
