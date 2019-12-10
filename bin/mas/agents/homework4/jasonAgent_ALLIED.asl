@@ -171,40 +171,7 @@ if (Length > 0) {
 //If we don't have the flag, we check our FOV to find an enemy to attack (That is closer than 30 units). 
 //We attack the medic or the agent that has lower health.
 +!perform_look_action: not objectivePackTaken(on) <- !check_flanqueo;
-													 !check_flag;
-													 -attack(_);
-													 -+minimum_health(1000);
-													 ?fovObjects(FOVObjects);
-													 .length(FOVObjects, L);
-													 -+iterador(0);
-													 while(iterador(C) & C < L){
-														.nth(C, FOVObjects, Objeto);
-														.nth(1, Objeto, Equipo);
-														.nth(6, Objeto, Pos);
-														?my_position(X,Y,Z);
-														!distance(Pos, pos(X,Y,Z));
-														?distance(Dis);
-														if(Equipo == 200 & Dis < 30){
-															.nth(2, Objeto, Tipo);
-															if(Tipo == 2){
-																-+attack(Pos);
-																-+minimum_health(-1);
-																-+state(standing);
-															}else{
-																.nth(5, Objeto, Health);
-																?minimum_health(M);
-																if(Health < M){
-																	-+attack(Pos);
-																	-+minimum_health(Health);
-																	-+state(standing);
-																}
-															}
-														}
-														-+iterador(C+1);
-													 }
-													 if(not state(standing) & not current_task(task(_, "TASK_WALKING_PATH", _, _, _))){
-													 	-+state(standing);
-													 }.
+													 !check_flag.
 													 
 													 
 //If we have the flag, we send messages to the other ALLIES to tell them our position.											
@@ -217,9 +184,9 @@ if (Length > 0) {
 				
 //We check if the agents have arrive to the flanking position.
 +!check_flanqueo: flanqueo <- ?my_position(X,Y,Z);
-							  !distance(pos(X,Y,Z), pos(230,0,150));
+							  !distance(pos(X,Y,Z), pos(230,0,145));
 							  ?distance(Dist);
-							  if(Dist < 10){
+							  if(Dist < 5){
 							  		-flanqueo;
 							  }.
 							  
@@ -244,9 +211,7 @@ if (Length > 0) {
 * <em> It's very useful to overload this plan. </em>
 * 
 */  
-+!perform_no_ammo_action . 
-   /// <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR PERFORM_NO_AMMO_ACTION GOES HERE.") }.
-    
++!perform_no_ammo_action.  
 /**
      * Action to do when an agent is being shot.
      * 
@@ -292,35 +257,15 @@ if (Length > 0) {
  */
 
 //If there is no enemy to attack and we are flanking, we go to the flanking position.
-+!update_targets: flanqueo & not attack(Pos) <- ?manager(M);
-							  					!add_task(task(3000, "TASK_GOTO_POSITION", M, pos(230,0,150), "")).
-							  
-//If we don't have the flag an there is an enemy to attack, we attack him.
-+!update_targets: attack(Pos) & not objectivePackTaken(on) <-   ?current_task(task(C_priority, _, _, _, _));
-																?manager(M);
-																?my_position(X,Y,Z);
-																!distance(pos(X,Y,Z),Pos);
-																?distance(Dist);
-																if(Dist > 3){
-																	!add_task(task(C_priority+1,"TASK_ATTACK", M, Pos, ""));
-																}else{
-																	!add_task(task(C_priority+1,"TASK_ATTACK", M, pos(X,Y,Z), ""));
-																}.
++!update_targets: flanqueo <- ?manager(M);
+							  !add_task(task(4000, "TASK_GOTO_POSITION", M, pos(230,0,145), "")).
 
 //If we have the flag, we go to the base with the highest priority.
-+!update_targets: objectivePackTaken(on) <- ?objective(X,Y,Z);
-											?manager(M);
-											!add_task(task(3500, "TASK_GET_OBJECTIVE", M, pos(X,Y,Z), "")).
-					
-//Otherwise, we go to the objective. If we were attacking an agent, we stop attacking.
-+!update_targets <- ?tasks(Tasks);
-					if(.member(task(_, "TASK_ATTACK", _, _, _), Tasks)){
-						.delete(task(_, "TASK_ATTACK", _, _, _), Tasks, NewTaskList);
-						-+tasks(NewTaskList);
-					}
-					?objective(X,Y,Z);
++!update_targets <- ?objective(X,Y,Z);
 					?manager(M);
-					!add_task(task(2500, "TASK_GET_OBJECTIVE", M, pos(X,Y,Z), "")).
+					!add_task(task(3500, "TASK_GET_OBJECTIVE", M, pos(X,Y,Z), "")).
+					
+
 	
 	
 	
@@ -424,6 +369,8 @@ if (Length > 0) {
    <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR cfa_refuse GOES HERE.")};
       -cfa_refuse.
 
++objectivePackTaken(on) <- +flanqueo;
+						   -+state(standing);.
 /////////////////////////////////
 //  Manage communications
 /////////////////////////////////
@@ -439,7 +386,8 @@ if (Length > 0) {
 
 //We initialize the agent with the "flanqueo" belief. The agent will flank the opponents.
 +!init
-   <- +flanqueo.  
+   <-   -+my_health_threshold(80);
+   		+flanqueo.  
 
 
 
