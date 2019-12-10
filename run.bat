@@ -1,5 +1,7 @@
 @echo off
 setlocal EnableDelayedExpansion
+:: Set console codification
+chcp 1252 > NUL
 cls
 pushd %~dp0
 
@@ -15,7 +17,7 @@ set run_render=1
 
 echo.
 echo Runing agent config '%agent_config%'.
-echo Render match: %run_render%
+echo Run render: %run_render%
 echo.
 :::::::
 
