@@ -12,7 +12,6 @@ type("CLASS_FIELDOPS").
 
 
 
-
 { include("jgomas.asl") }
 
 
@@ -31,16 +30,16 @@ type("CLASS_FIELDOPS").
 //  GET AGENT TO AIM 
 /////////////////////////////////  
 /**
- * Calculates if there is an enemy at sight.
- *
- * This plan scans the list <tt> m_FOVObjects</tt> (objects in the Field
- * Of View of the agent) looking for an enemy. If an enemy agent is found, a
- * value of aimed("true") is returned. Note that there is no criterion (proximity, etc.) for the
- * enemy found. Otherwise, the return value is aimed("false")
- *
- * <em> It's very useful to overload this plan. </em>
- * 
- */
+* Calculates if there is an enemy at sight.
+* 
+* This plan scans the list <tt> m_FOVObjects</tt> (objects in the Field
+* Of View of the agent) looking for an enemy. If an enemy agent is found, a
+* value of aimed("true") is returned. Note that there is no criterion (proximity, etc.) for the
+* enemy found. Otherwise, the return value is aimed("false")
+* 
+* <em> It's very useful to overload this plan. </em>
+* 
+*/  
 +!get_agent_to_aim
 <-  ?debug(Mode); if (Mode<=2) { .println("Looking for agents to aim."); }
 ?fovObjects(FOVObjects);
@@ -71,6 +70,7 @@ if (Length > 0) {
             // Object may be an enemy
             .nth(1, Object, Team);
             ?my_formattedTeam(MyTeam);
+            
             if (Team == 200) {  // Only if I'm ALLIED
 				
                 ?debug(Mode); if (Mode<=2) { .println("Aiming an enemy. . .", MyTeam, " ", .number(MyTeam) , " ", Team, " ", .number(Team)); }
@@ -113,7 +113,6 @@ if (Length > 0) {
 													       ProdMod = math.sqrt(X12*X12+Y12*Y12+Z12*Z12)*math.sqrt(X13*X13+Y13*Y13+Z13*Z13);
 													       Cosangle = ProdEsc/ProdMod;
 													       -+cosangle(Cosangle).
-
 /////////////////////////////////
 //  LOOK RESPONSE
 /////////////////////////////////
@@ -121,7 +120,7 @@ if (Length > 0) {
     <-  //-waiting_look_response;
         .length(FOVObjects, Length);
         if (Length > 0) {
-            ///?debug(Mode); if (Mode<=1) { .println("HAY ", Length, " OBJETOS A MI ALREDEDOR:\n", FOVObjects); }
+            ?debug(Mode); if (Mode<=1) { .println("HAY ", Length, " OBJETOS A MI ALREDEDOR:\n", FOVObjects); }
         };    
         -look_response(_)[source(M)];
         -+fovObjects(FOVObjects);
@@ -171,46 +170,27 @@ if (Length > 0) {
 
 //If we don't have the flag, we check our FOV to find an enemy to attack (That is closer than 30 units). 
 //We attack the medic or the agent that has lower health.
-+!perform_look_action: not objectivePackTaken(on) <- !check_flag;
-													 -attack(_);
-													 -+minimum_health(1000);
-													 ?fovObjects(FOVObjects);
-													 .length(FOVObjects, L);
-													 -+iterador(0);
-													 while(iterador(C) & C < L){
-														.nth(C, FOVObjects, Objeto);
-														.nth(1, Objeto, Equipo);
-														.nth(6, Objeto, Pos);
-														?my_position(X,Y,Z);
-														!distance(Pos, pos(X,Y,Z));
-														?distance(Dis);
-														if(Equipo == 200 & Dis < 30){
-															.nth(2, Objeto, Tipo);
-															if(Tipo == 2){
-																-+attack(Pos);
-																-+minimum_health(-1);
-																-+state(standing);
-															}else{
-																.nth(5, Objeto, Health);
-																?minimum_health(M);
-																if(Health < M){
-																	-+attack(Pos);
-																	-+minimum_health(Health);
-																	-+state(standing);
-																}
-															}
-														}
-														-+iterador(C+1);
-													 }
-													 if(not state(standing) & not current_task(task(_, "TASK_WALKING_PATH", _, _, _))){
-													 	-+state(standing);
-													 }.
-			   
-//If we have the flag, we send messages to the other ALLIES to tell them our position.
-+!perform_look_action <- ?my_position(X,Y,Z);
++!perform_look_action: not objectivePackTaken(on) <- !check_flanqueo;
+													 !check_flag.
+													 
+													 
+//If we have the flag, we send messages to the other ALLIES to tell them our position.											
++!perform_look_action <- !check_flanqueo;
+						 ?my_position(X,Y,Z);
 						 .my_team("ALLIED", E1);
 						 .concat("goto(",X,",",Y,",",Z,")", Content1);
 						 .send_msg_with_conversation_id(E1, tell, Content1, "INT").
+
+				
+//We check if the agents have arrive to the flanking position.
++!check_flanqueo: flanqueo <- ?my_position(X,Y,Z);
+							  !distance(pos(X,Y,Z), pos(230,0,145));
+							  ?distance(Dist);
+							  if(Dist < 5){
+							  		-flanqueo;
+							  }.
+							  
++!check_flanqueo.
 
 +!check_flag <- ?my_position(X,Y,Z);
 				?objective(OX,OY,OZ);
@@ -219,6 +199,9 @@ if (Length > 0) {
 				if(Dist < 1){
 					-+objective(224, 0, 224);
 				}.
+			   
+   /// <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR PERFORM_LOOK_ACTION GOES HERE.") }. 
+
 /**
 * Action to do if this agent cannot shoot.
 * 
@@ -228,9 +211,7 @@ if (Length > 0) {
 * <em> It's very useful to overload this plan. </em>
 * 
 */  
-+!perform_no_ammo_action . 
-   /// <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR PERFORM_NO_AMMO_ACTION GOES HERE.") }.
-    
++!perform_no_ammo_action.  
 /**
      * Action to do when an agent is being shot.
      * 
@@ -247,10 +228,11 @@ if (Length > 0) {
 /////////////////////////////////
 //  SETUP PRIORITIES
 /////////////////////////////////
-/**  You can change initial priorities if you want to change the behaviour of each agent  **/+!setup_priorities
+/**  You can change initial priorities if you want to change the behaviour of each agent  **/
++!setup_priorities
     <-  +task_priority("TASK_NONE",0);
-        +task_priority("TASK_GIVE_MEDICPAKS", 0);
-        +task_priority("TASK_GIVE_AMMOPAKS", 3000);
+        +task_priority("TASK_GIVE_MEDICPAKS", 2000);
+        +task_priority("TASK_GIVE_AMMOPAKS", 0);
         +task_priority("TASK_GIVE_BACKUP", 0);
         +task_priority("TASK_GET_OBJECTIVE",1000);
         +task_priority("TASK_ATTACK", 1000);
@@ -274,39 +256,16 @@ if (Length > 0) {
  *
  */
 
-//We wait for the flanking agents for 57 seconds.
-+!update_targets: not prepared <- .wait(57000);
-								  +prepared.
-
-//If we don't have the flag an there is an enemy to attack, we attack him (Unless we are giving ammopaks).
-+!update_targets: attack(Pos) & not objectivePackTaken(on) <-   ?tasks(Tasks);
-																if(not .member(task(_, "TASK_GIVE_AMMOPAKS", _, _, _), Tasks)){
-																	?current_task(task(C_priority, _, _, _, _));
-																	?manager(M);
-																	?my_position(X,Y,Z);
-																	!distance(pos(X,Y,Z),Pos);
-																	?distance(Dist);
-																	if(Dist > 3){
-																		!add_task(task(C_priority+1,"TASK_ATTACK", M, Pos, ""));
-																	}else{
-																		!add_task(task(C_priority+1,"TASK_ATTACK", M, pos(X,Y,Z), ""));
-																	}
-																}.
+//If there is no enemy to attack and we are flanking, we go to the flanking position.
++!update_targets: flanqueo <- ?manager(M);
+							  !add_task(task(4000, "TASK_GOTO_POSITION", M, pos(230,0,145), "")).
 
 //If we have the flag, we go to the base with the highest priority.
-+!update_targets: objectivePackTaken(on) <- ?objective(X,Y,Z);
-											?manager(M);
-											!add_task(task(3500, "TASK_GET_OBJECTIVE", M, pos(X,Y,Z), "")).
-											
-//Otherwise, we go to the objective. If we were attacking an agent, we stop attacking.
-+!update_targets <- ?tasks(Tasks);
-					if(.member(task(_, "TASK_ATTACK", _, _, _), Tasks)){
-						.delete(task(_, "TASK_ATTACK", _, _, _), Tasks, NewTaskList);
-						-+tasks(NewTaskList);
-					}
-					?objective(X,Y,Z);
++!update_targets <- ?objective(X,Y,Z);
 					?manager(M);
-					!add_task(task(2500, "TASK_GET_OBJECTIVE", M, pos(X,Y,Z), "")).
+					!add_task(task(3500, "TASK_GET_OBJECTIVE", M, pos(X,Y,Z), "")).
+					
+
 	
 	
 	
@@ -338,7 +297,7 @@ if (Length > 0) {
  *
  */
  +!checkAmmoAction
-     <- -+fieldopsAction(on).
+     <-  -+fieldopsAction(on).
       //  go to help
 
 
@@ -391,6 +350,8 @@ if (Length > 0) {
 //  ANSWER_ACTION_CFM_OR_CFA
 /////////////////////////////////
 
+     
+
     
 +cfm_agree[source(M)]
    <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR cfm_agree GOES HERE.")};
@@ -406,8 +367,10 @@ if (Length > 0) {
 
 +cfa_refuse[source(M)]
    <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR cfa_refuse GOES HERE.")};
-      -cfa_refuse.  
+      -cfa_refuse.
 
++objectivePackTaken(on) <- +flanqueo;
+						   -+state(standing);.
 /////////////////////////////////
 //  Manage communications
 /////////////////////////////////
@@ -421,5 +384,10 @@ if (Length > 0) {
 //  Initialize variables
 /////////////////////////////////
 
-+!init.  
+//We initialize the agent with the "flanqueo" belief. The agent will flank the opponents.
++!init
+   <-   -+my_health_threshold(80);
+   		+flanqueo.  
+
+
 
