@@ -4,26 +4,25 @@
 <-
     // Convert x to an angle between -2 PI and 2 PI
     //X = X % (2 * math.pi);
-    ModRes = X mod (2 * math.pi);
+    ModX = X mod (2 * math.pi);
+    .println("---- ModX: ", ModX);
 
     // Compute the Taylor series approximation
-    //Term = 1.0; // ith term = x^i / i!
+    Term = 1.0; // ith term = x^i / i!
     Sum = 0.0; // sum of first i terms in taylor series
 
     //for (int i = 1; term != 0.0; i++)
-    -+term(1);
-    -+counter(1);
-    while(counter(I) & term(Term) & not (Term == 0.0)) {
-        //Term = Term * (ModRes/I);
-        -+term(Term * (ModRes/I));
+    I = 1;
+    while (not (Term == 0.0)) {
+        Term = Term * (ModX/I);
+
         if ((I mod 4) == 1) {
             Sum = Sum + Term;
         }
         if ((I mod 4) == 3) {
             Sum = Sum - Term;
         }
-        //I = I + 1;
-        -+counter(I + 1);
+        I = I + 1;
         .println("---- I: ", I);
         .println("---- Sum: ", Sum);
     }
