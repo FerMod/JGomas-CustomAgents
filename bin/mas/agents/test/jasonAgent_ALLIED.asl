@@ -80,6 +80,28 @@ if (Length > 0) {
 
             }
 
+            if (Team == 100) {
+                ?my_position(MyX,MyY,MyZ);
+                ?objective(ObjX,ObjY,ObjZ);
+
+                .random(R);
+                if (R > 0.5) {
+                    SinVal = 0.65028784015; // sin(15)
+                    CosVal = -0.75968791285 ; // cos(15)
+                } else {
+                    SinVal = -0.65028784015; // sin(-15)
+                    CosVal = -0.75968791285; // cos(-15)
+                }
+                //!rotatePoint(90,pos(MyX,MyY,MyZ),pos(ObjX,ObjY,ObjZ));
+                !rotatePoint(SinVal, CosVal, pos(MyX,MyY,MyZ),pos(ObjX,ObjY,ObjZ));
+                //!rotatePoint(5, pos(MyX,MyY,MyZ),pos(ObjX,ObjY,ObjZ));
+                ?rotatePoint(NewX, NewY, NewZ);
+                .println("----- Rotated point. Old(x: ", MyX,", y: ", MyY, ", z:", MyZ,") New(x: ", NewX,", y: ", NewY, ", z:", NewZ,")");
+
+				update_destination(pos(NewX, NewY, NewZ));
+
+            }
+
         }
 
         -+bucle(X+1);
@@ -91,27 +113,25 @@ if (Length > 0) {
 
 -bucle(_).
 
++!rotatePoint(SinVal, CosVal, pos(PointX,PointY,PointZ), pos(CenterX,CenterY,CenterZ))
+<-
+    NewX = CenterX + (PointX - CenterX) * CosVal - (PointZ - CenterZ) * SinVal;
+	NewZ = CenterZ + (PointX - CenterX) * SinVal + (PointZ - CenterZ) * CosVal;
+	-+rotatePoint(NewX, PointY, NewZ);
+.
+
 +!rotatePoint(Angle, pos(PointX,PointY,PointZ), pos(CenterX,CenterY,CenterZ))
 <-
 	.println("---- Angle: ", Angle);
     !sinn(Angle);
-    ?sinn(SinAngle);
-    .println("---- SinAngle: ", SinAngle);
+    ?sinn(SinVal);
+    .println("---- SinVal: ", SinVal);
 
     !coss(Angle);
-    ?coss(CosAngle);
-    .println("---- CosAngle: ", CosAngle);
+    ?coss(CosVal);
+    .println("---- CosVal: ", CosVal);
 
-	.println("---- PointX: ", PointX, " PointY: ", PointY, " PointZ: ", PointZ);
-
-    //NewX = CenterX + (PointX - CenterX) * math.cos(Angle) - (PointZ - CenterZ) * math.sin(Angle);
-	//NewZ = CenterZ + (PointX - CenterX) * math.sin(Angle) + (PointZ - CenterZ) * math.cos(Angle);
-
-    NewX = CenterX + (PointX - CenterX) * CosAngle - (PointZ - CenterZ) * SinAngle;
-	NewZ = CenterZ + (PointX - CenterX) * SinAngle + (PointZ - CenterZ) * CosAngle;
-
-	.println("---- NewX: ", NewX, " NewY: ", PointY, " NewZ: ", NewZ);
-	-+rotatePoint(NewX, PointY, NewZ);
+    !rotatePoint(SinVal, CosVal, pos(PointX,PointY,PointZ), pos(CenterX,CenterY,CenterZ))
 .
 
 /////////////////////////////////
@@ -228,13 +248,19 @@ if (Length > 0) {
  */
 
 +!update_targets
+    /*
 <-
     ?my_position(MyX,MyY,MyZ);
     ?objective(ObjX,ObjY,ObjZ);
 
-	!rotatePoint(90,pos(MyX,MyY,MyZ),pos(ObjX,ObjY,ObjZ));
+	//!rotatePoint(90,pos(MyX,MyY,MyZ),pos(ObjX,ObjY,ObjZ));
+    SinVal = -0.95892427466; // sin(5)
+    CosVal = 0.28366218546; // cos(5)
+    !rotatePoint(SinVal, CosVal, pos(MyX,MyY,MyZ),pos(ObjX,ObjY,ObjZ));
+    //!rotatePoint(5, pos(MyX,MyY,MyZ),pos(ObjX,ObjY,ObjZ));
 	?rotatePoint(NewX, NewY, NewZ);
     .println("----- Rotated point. Old(x: ", MyX,", y: ", MyY, ", z:", MyZ,") New(x: ", NewX,", y: ", NewY, ", z:", NewZ,")");
+    */
 .
 
 

@@ -221,7 +221,7 @@ current_task(nil).
 
 			    ?debug(Mode); if (Mode<=1) { .println("No tengo tareas."); }
 			    ?current_destination(CurrentDestination);
-			    update_destination(CurrentDestination)
+			    update_destination(CurrentDestination);
 			    }
 
         .drop_desire(fsm);
