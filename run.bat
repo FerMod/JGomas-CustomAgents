@@ -11,7 +11,7 @@ REM set agent_config=default
 set agent_config=homework4
 
 :: Enable or disable render on launch
-set run_render=0
+set run_render=1
 
 echo.
 echo Runing agent config '%agent_config%'.
@@ -52,7 +52,7 @@ start /b java -classpath "lib\jade.jar;lib\jadeTools.jar;lib\Base64.jar;lib\http
 
 popd
 
-if %run_render% eq 1 then (
+if %run_render% == 1 then (
     pushd .\bin\render\w32\
     timeout 5 > nul
     :: Run the jgomas renderer
