@@ -175,11 +175,12 @@ if (Length > 0) {
 													 
 													 
 //If we have the flag, we send messages to the other ALLIES to tell them our position.											
-+!perform_look_action <- !check_flanqueo;
-						 ?my_position(X,Y,Z);
-						 .my_team("ALLIED", E1);
-						 .concat("goto(",X,",",Y,",",Z,")", Content1);
-						 .send_msg_with_conversation_id(E1, tell, Content1, "INT").
++!perform_look_action <- create_medic_pack; 
+                        !check_flanqueo;
+						?my_position(X,Y,Z);
+						.my_team("ALLIED", E1);
+						.concat("goto(",X,",",Y,",",Z,")", Content1);
+						.send_msg_with_conversation_id(E1, tell, Content1, "INT").
 
 				
 //We check if the agents have arrive to the flanking position.
@@ -346,12 +347,7 @@ if (Length > 0) {
        ?my_health(Hr);
        
        if (Hr <= Ht) { 
-          ?my_position(X, Y, Z);
-         .my_team("medic_ALLIED", E2);
-         //.println("Mi equipo medico: ", E2 );
-         .concat("cfm(",X, ", ", Y, ", ", Z, ", ", Hr, ")", Content2);
-         .send_msg_with_conversation_id(E2, tell, Content2, "CFM");
-
+            create_medic_pack;
        }
        .
        
@@ -395,8 +391,12 @@ if (Length > 0) {
 
 //We initialize the agent with the "flanqueo" belief. The agent will flank the opponents.
 +!init
-   <-   -+my_health_threshold(80);
-   		+flanqueo.  
+<-   
+    -+my_health_threshold(50);
+   	+flanqueo;
+    .range();
+    .println();
+. 
 
 
 
