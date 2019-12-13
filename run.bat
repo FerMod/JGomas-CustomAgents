@@ -14,10 +14,12 @@ set agent_config=homework4
 
 :: Enable or disable render on launch
 set run_render=1
+set host=localhost
 
 echo.
 echo Runing agent config '%agent_config%'.
 echo Run render: %run_render%
+echo Host: '%host%'
 echo.
 :::::::
 
@@ -50,7 +52,7 @@ start /b java -classpath "lib\jade.jar;lib\jadeTools.jar;lib\Base64.jar;lib\http
 :: Wait some seconds, to let the manager to finish the initial setup
 timeout 5 > nul
 :: Run the jgomas launcher
-start /b java -classpath "lib\jade.jar;lib\jadeTools.jar;lib\Base64.jar;lib\http.jar;lib\iiop.jar;lib\beangenerator.jar;lib\jgomas.jar;lib\jason.jar;lib\JasonJGomas.jar;classes;." jade.Boot -container -host localhost "%agents%" > "%logs_path%\%agent_config%_launcher.log"
+start /b java -classpath "lib\jade.jar;lib\jadeTools.jar;lib\Base64.jar;lib\http.jar;lib\iiop.jar;lib\beangenerator.jar;lib\jgomas.jar;lib\jason.jar;lib\JasonJGomas.jar;classes;." jade.Boot -container -host "%host%" "%agents%" > "%logs_path%\%agent_config%_launcher.log"
 
 popd
 
