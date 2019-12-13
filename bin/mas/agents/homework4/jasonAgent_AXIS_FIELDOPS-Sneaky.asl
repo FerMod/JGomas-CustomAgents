@@ -9,7 +9,7 @@ team("AXIS").
 type("CLASS_FIELDOPS").
 
 // Value of "closeness" to the Flag, when patrolling in defense
-patrollingRadius(30).
+patrollingRadius(10).
 
 
 
@@ -446,6 +446,6 @@ if(attack(_,_,_)){
 +!init
    <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR init GOES HERE.")}
    ?my_position(X,Y,Z);
-   //-+objective(X,Y,Z);
+   -+objective(125,Y,205);
    -+my_ammo_threshold(50). 
 

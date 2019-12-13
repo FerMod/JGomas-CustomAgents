@@ -171,7 +171,8 @@ if (Length > 0) {
 //If we don't have the flag, we check our FOV to find an enemy to attack (That is closer than 30 units).
 //We attack the medic or the agent that has lower health.
 +!perform_look_action: not objectivePackTaken(on) <- !check_flanqueo;
-													 !check_flag.
+													 !check_flag;
+													 !check_medicine.
 
 
 //If we have the flag, we send messages to the other ALLIES to tell them our position.
@@ -200,7 +201,25 @@ if (Length > 0) {
 					-+objective(224, 0, 224);
 				}.
 
-   /// <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR PERFORM_LOOK_ACTION GOES HERE.") }.
++!check_medicine <- ?my_health_threshold(Ht);
+       				?my_health(Hr);
+					if (Hr <= Ht & not current_task(task(_,"TASK_RUN_AWAY",_,_,_))){
+                        ?fovObjects(Objects);
+                        .length(Objects, Length);
+                        -+count(0);
+                        while(count(X) & X < Length){
+                            .nth(X, Objects, Object);
+                            .nth(4, Object, Dis);
+                            .nth(2, Object, Type);
+                            if(Type == 1001 & Dis < 15){
+                                .nth(6, Object, Pos);
+                                +medics(Pos);
+                                -+state(standing);
+                            }
+                            -+count(X+1);
+                        }
+					}.
+
 
 /**
 * Action to do if this agent cannot shoot.
@@ -258,29 +277,17 @@ if (Length > 0) {
  */
 
 //If there is no enemy to attack and we are flanking, we go to the flanking position.
-+!update_targets: flanqueo
-<-
-    if(current_task(_,"TASK_GIVE_MEDIPAKS",_,_,_)){
-        .delete(task(_,"TASK_GIVE_MEDIPAKS",_,_,_));
-        ?my_position(X,Y,Z);
-        !add_task(task("TASK_GIVE_MEDICPAKS", M, pos(X, Y, Z), ""));
-    }
-    ?manager(M);
-    !add_task(task(4000, "TASK_GOTO_POSITION", M, pos(230,0,145), ""));
-.
++!update_targets: medics(X) <- -medics(_);
+							  ?manager(M);
+							  !add_task(task(4100, "TASK_RUN_AWAY", M, X, "")).
+
++!update_targets: flanqueo <- ?manager(M);
+							  !add_task(task(4000, "TASK_GOTO_POSITION", M, pos(230,0,145), "")).
 
 //If we have the flag, we go to the base with the highest priority.
-+!update_targets
-<-
-    if(current_task(_,"TASK_GIVE_MEDIPAKS",_,_,_)){
-        .delete(task(_,"TASK_GIVE_MEDIPAKS",_,_,_));
-        ?my_position(X,Y,Z);
-        !add_task(task("TASK_GIVE_MEDICPAKS", M, pos(X, Y, Z), ""));
-    }
-    ?objective(X,Y,Z);
-    ?manager(M);
-    !add_task(task(3500, "TASK_GET_OBJECTIVE", M, pos(X,Y,Z), ""));
-.
++!update_targets <- ?objective(X,Y,Z);
+					?manager(M);
+					!add_task(task(3500, "TASK_GET_OBJECTIVE", M, pos(X,Y,Z), "")).
 
 
 
@@ -331,31 +338,25 @@ if (Length > 0) {
  *
  */
 +!performThresholdAction
-       <-
+<-
+    ?my_ammo_threshold(At);
+    ?my_ammo(Ar);
 
-       ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR PERFORM_TRESHOLD_ACTION GOES HERE.") }
+    if (Ar <= At) {
+        ?my_position(X, Y, Z);
+        .my_team("fieldops_ALLIED", E1);
+        //.println("Mi equipo intendencia: ", E1 );
+        .concat("cfa(",X, ", ", Y, ", ", Z, ", ", Ar, ")", Content1);
+        .send_msg_with_conversation_id(E1, tell, Content1, "CFA");
+    }
 
-       ?my_ammo_threshold(At);
-       ?my_ammo(Ar);
+    ?my_health_threshold(Ht);
+    ?my_health(Hr);
 
-       if (Ar <= At) {
-          ?my_position(X, Y, Z);
-
-         .my_team("fieldops_ALLIED", E1);
-         //.println("Mi equipo intendencia: ", E1 );
-         .concat("cfa(",X, ", ", Y, ", ", Z, ", ", Ar, ")", Content1);
-         .send_msg_with_conversation_id(E1, tell, Content1, "CFA");
-
-
-       }
-
-       ?my_health_threshold(Ht);
-       ?my_health(Hr);
-
-       if (Hr <= Ht) {
-            create_medic_pack;
-       }
-       .
+    if (Hr <= Ht) {
+        create_medic_pack;
+    }
+.
 
 /////////////////////////////////
 //  ANSWER_ACTION_CFM_OR_CFA
