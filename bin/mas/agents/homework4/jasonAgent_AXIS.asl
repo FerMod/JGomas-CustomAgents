@@ -143,8 +143,8 @@ patrollingRadius(30).
               -+aimed("true");
               ?pos_enemy(XE,YE,ZE);
               .my_team("AXIS", E3);
-              .println("----------------------------COMMANDER--------------------------");
-              .println("AIM HERE: ",XE,"  :", YE, "  :", ZE);
+              //.println("----------------------------COMMANDER--------------------------");
+              //.println("AIM HERE: ",XE,"  :", YE, "  :", ZE);
               //?type_enemy(TE);
               //.println("Aim to:", TE);
               .concat("c_aimEnemy(",XE, ", ", YE, ", ", ZE, ")", Content3);

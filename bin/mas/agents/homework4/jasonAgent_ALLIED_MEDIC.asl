@@ -8,8 +8,13 @@ team("ALLIED").
 // Type of troop.
 type("CLASS_MEDIC").
 
-
-
+/*
+// Packs ID
+None 1000
+Medicpack 1001
+Ammopack 1002
+Objpack 1003
+*/
 
 
 { include("jgomas.asl") }
@@ -66,6 +71,19 @@ if (Length > 0) {
 
         if (Type > 1000) {
             ?debug(Mode); if (Mode<=2) { .println("I found some object."); }
+            if (Type == 1001) {
+                ?my_health_threshold(Ht);
+                ?my_health(Hr);
+                if (Hr <= Ht) {
+                    !nearestMedicPack;
+                    ?nearestMedicPack(NearestPos);
+                    if (not (NearestPos == nil)) {
+                        .println("nearest: ", NearestPos);
+                        ?manager(M);
+                        !add_task(task("TASK_GOTO_POSITION", M, NearestPos, ""));
+                    }
+                }
+            }
         } else {
             // Object may be an enemy
             .nth(1, Object, Team);
@@ -213,17 +231,19 @@ if (Length > 0) {
 */
 +!perform_no_ammo_action.
 /**
-     * Action to do when an agent is being shot.
-     *
-     * This plan is called every time this agent receives a messager from
-     * agent Manager informing it is being shot.
-     *
-     * <em> It's very useful to overload this plan. </em>
-     *
-     */
+* Action to do when an agent is being shot.
+*
+* This plan is called every time this agent receives a messager from
+* agent Manager informing it is being shot.
+*
+* <em> It's very useful to overload this plan. </em>
+*
+*/
 +!perform_injury_action
+/*
 <-
     create_medic_pack;
+*/
 .
 
 /////////////////////////////////
@@ -331,32 +351,82 @@ if (Length > 0) {
  *
  */
 +!performThresholdAction
-       <-
+<-
+    ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR PERFORM_TRESHOLD_ACTION GOES HERE.") }
 
-       ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR PERFORM_TRESHOLD_ACTION GOES HERE.") }
+    ?my_ammo_threshold(At);
+    ?my_ammo(Ar);
 
-       ?my_ammo_threshold(At);
-       ?my_ammo(Ar);
+    if (Ar <= At) {
+        ?my_position(X, Y, Z);
 
-       if (Ar <= At) {
-          ?my_position(X, Y, Z);
+        .my_team("fieldops_ALLIED", E1);
+        //.println("Mi equipo intendencia: ", E1 );
+        .concat("cfa(",X, ", ", Y, ", ", Z, ", ", Ar, ")", Content1);
+        .send_msg_with_conversation_id(E1, tell, Content1, "CFA");
 
-         .my_team("fieldops_ALLIED", E1);
-         //.println("Mi equipo intendencia: ", E1 );
-         .concat("cfa(",X, ", ", Y, ", ", Z, ", ", Ar, ")", Content1);
-         .send_msg_with_conversation_id(E1, tell, Content1, "CFA");
+    }
 
+    ?my_health_threshold(Ht);
+    ?my_health(Hr);
 
-       }
+   if (Hr <= Ht) {
+        create_medic_pack;
+        !nearestMedicPack;
+        ?nearestMedicPack(NearestPos);
+        if (not (NearestPos == nil)) {
+            .println("nearest: ", NearestPos);
+            ?manager(M);
+            ?current_task(task(C_priority, _, _, _, _));
+            !add_task(task(C_priority+1, "TASK_GOTO_POSITION", M, NearestPos, ""));
+        }
+    }
+.
 
-       ?my_health_threshold(Ht);
-       ?my_health(Hr);
++!nearestMedicPack
+<-
+    ?fovObjects(FOVObjects);
+    .length(FOVObjects, Length);
 
-       if (Hr <= Ht) {
-            create_medic_pack;
-       }
-       .
+    -+nearestDist(1000);
+    -+nearestPos(nil);
+    
+    if (Length > 0) {
 
+        -+bucle(0);
+        while (nearestDist(NearestDist) & nearestPos(NearestPos) & bucle(X) & (X < Length)) {
+            
+            ?nearestDist(NearestDist);
+            ?nearestPos(NearestPos);
+
+            .nth(X, FOVObjects, Object);
+
+            // Object structure
+            // [#, TEAM, TYPE, ANGLE, DISTANCE, HEALTH, POSITION ]
+            .nth(2, Object, Type);
+
+            if (Type == 1001) {
+                .nth(4, Object, Dist);
+                .println("Dist: ", Dist);
+                if (Dist < NearestDist) {
+                    -+nearestDist(Dist);
+                    .nth(6, Object, Pos);
+                    -+nearestPos(Pos);
+                }
+            }
+
+            -+bucle(X+1);
+        }
+        -bucle(_);
+        
+    }
+
+    ?nearestPos(NearestPos);
+    .println(">>> NearestPos: ", NearestPos);
+    -+nearestMedicPack(NearestPos);
+    -nearestDist(_);
+    -nearestPos(_);
+.
 /////////////////////////////////
 //  ANSWER_ACTION_CFM_OR_CFA
 /////////////////////////////////
@@ -400,6 +470,11 @@ if (Length > 0) {
 <-
     -+my_health_threshold(50);
    	+flanqueo;
+    create_medic_pack;
+    !nearestMedicPack;
+    ?nearestMedicPack(Nearest);
+    .println("--- NearestPos: ", Nearest);
+
 .
 
 

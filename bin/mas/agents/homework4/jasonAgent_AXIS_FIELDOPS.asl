@@ -343,7 +343,7 @@ if (Length > 0) {
       .println("Order ignored, Im giving ammo."); 
       }
     else {
-      .println("Commandar asks for help!! I'm going to: ",X, " ", Y, " ",Z);
+      //.println("Commandar asks for help!! I'm going to: ",X, " ", Y, " ",Z);
       !add_task(task(C_priority+1,"TASK_ATTACK", M, pos(X, Y, Z), ""));
     }
     .
