@@ -14,12 +14,16 @@ set agent_config=homework4
 
 :: Enable or disable render on launch
 set run_render=1
-set host=localhost
+set jgomas_host=localhost
+set render_server=localhost
+set render_port=8001
 
 echo.
 echo Runing agent config '%agent_config%'.
+echo JGomas host: '%jgomas_host%'
 echo Run render: %run_render%
-echo Host: '%host%'
+echo Render server: '%render_server%'
+echo Render port: '%render_port%'
 echo.
 :::::::
 
@@ -52,7 +56,7 @@ start /b java -classpath "lib\jade.jar;lib\jadeTools.jar;lib\Base64.jar;lib\http
 :: Wait some seconds, to let the manager to finish the initial setup
 timeout 5 > nul
 :: Run the jgomas launcher
-start /b java -classpath "lib\jade.jar;lib\jadeTools.jar;lib\Base64.jar;lib\http.jar;lib\iiop.jar;lib\beangenerator.jar;lib\jgomas.jar;lib\jason.jar;lib\JasonJGomas.jar;classes;." jade.Boot -container -host "%host%" "%agents%" > "%logs_path%\%agent_config%_launcher.log"
+start /b java -classpath "lib\jade.jar;lib\jadeTools.jar;lib\Base64.jar;lib\http.jar;lib\iiop.jar;lib\beangenerator.jar;lib\jgomas.jar;lib\jason.jar;lib\JasonJGomas.jar;classes;." jade.Boot -container -host "%jgomas_host%" "%agents%" > "%logs_path%\%agent_config%_launcher.log"
 
 popd
 
@@ -60,7 +64,7 @@ if %run_render% == 1 then (
     pushd .\bin\render\w32\
     timeout 5 > nul
     :: Run the jgomas renderer
-    start /b run_jgomasrender.bat
+    start /b run_jgomasrender.bat -server %render_server% -port %render_port%
     popd
 )
 
