@@ -168,37 +168,20 @@ if (Length > 0) {
 * 
 */
 
-//If the agent doesn't have the flag, it checks its current situation.
-+!perform_look_action: not objectivePackTaken(on) <- !check_flanqueo;
-													 !check_flag;
-													 !check_medicine.
-													 
-													 
-//If the agent has the flag, it sends messages to the other ALLIES to tell them its position.											
-+!perform_look_action <- !check_flanqueo;
-						 ?my_position(X,Y,Z);
-						 .my_team("ALLIED", E1);
-						 .concat("goto(",X,",",Y,",",Z,")", Content1);
-						 .send_msg_with_conversation_id(E1, tell, Content1, "INT").
+//The agent check its current position.
++!perform_look_action <- if(not distraer){
+						 	!check_flag;
+						 }
+						 !check_medicine.
 
-				
-//The agent checks if it has arrived to the flanking position.
-+!check_flanqueo: flanqueo <- ?my_position(X,Y,Z);
-							  !distance(pos(X,Y,Z), pos(230,0,145));
-							  ?distance(Dist);
-							  if(Dist < 5){
-							  		-flanqueo;
-							  }.
-							  
-+!check_flanqueo.
-
-//The agent checks if it's near the position of the objective and there is no flag.
+//If it's near the flag, it returns back to distract the enemies.
 +!check_flag <- ?my_position(X,Y,Z);
 				?objective(OX,OY,OZ);
 				!distance(pos(X,Y,Z), pos(OX,OY,OZ));
 				?distance(Dist);
-				if(Dist < 1){
-					-+objective(224, 0, 224);
+				if(Dist < 15){
+					+distraer;
+					-+state(standing);
 				}.
 
 //If the agent has low health, it checks if there is any medic pack in the FOV.
@@ -250,7 +233,7 @@ if (Length > 0) {
 /**  You can change initial priorities if you want to change the behaviour of each agent  **/
 +!setup_priorities
     <-  +task_priority("TASK_NONE",0);
-        +task_priority("TASK_GIVE_MEDICPAKS", 5000);
+        +task_priority("TASK_GIVE_MEDICPAKS", 2000);
         +task_priority("TASK_GIVE_AMMOPAKS", 0);
         +task_priority("TASK_GIVE_BACKUP", 0);
         +task_priority("TASK_GET_OBJECTIVE",1000);
@@ -280,9 +263,27 @@ if (Length > 0) {
 							  ?manager(M);
 							  !add_task(task(4100, "TASK_RUN_AWAY", M, X, "")).
 
-//If the agent has the "flanqueo" belief, it goes to the "flanking" position.
-+!update_targets: flanqueo <- ?manager(M);
-							  !add_task(task(4000, "TASK_GOTO_POSITION", M, pos(230,0,145), "")).
+//If the agent is distracting the enemies, it patrols the (135,0,215) position.
++!update_targets: distraer <-   +newPos(0,0);
+						
+								+position(invalid);
+								while (position(invalid)) {
+									-position(invalid);
+									
+									.random(X);
+									NewObjectiveX = 135 + 20 / 2 - X * 20;
+									.random(Z);
+									NewObjectiveZ = 215 + 20 / 2 - Z * 20;
+									
+									check_position(pos(NewObjectiveX,0, NewObjectiveZ));
+									
+									-+newPos(NewObjectiveX, NewObjectiveZ);
+								}
+						
+								?newPos(NewObjectiveX, NewObjectiveZ);
+						
+								!add_task(task(4000, "TASK_PATROLLING", M, pos(NewObjectiveX, 0, NewObjectiveZ), "")).
+									
 
 //Otherwise, it goes to the objective.
 +!update_targets <- ?objective(X,Y,Z);
@@ -356,11 +357,15 @@ if (Length > 0) {
        
        }
        
-	   //If the agent has low health, it creates medic packs.
+	   //If the agent has low health, creates medic packs and returns back to distract the enemies.
        ?my_health_threshold(Ht);
        ?my_health(Hr);
-       if (Hr <= Ht) { 
+       if (Hr <= Ht) {
           create_medic_pack;
+	   	  if(not distraer){
+		  	+distraer;
+			-+state(standing);
+		  }
        }.
        
 /////////////////////////////////
@@ -386,30 +391,14 @@ if (Length > 0) {
    <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR cfa_refuse GOES HERE.")};
       -cfa_refuse.
 
-//If the agent takes the flag and it's near the original position of the flag, it returns back to the "flanking" position.
-+objectivePackTaken(on) <- ?my_position(X,Y,Z);
-						   if(X>208 & Z>145){
-						   		+flanqueo;
-						   }
-						   -+state(standing).
-						   
-/////////////////////////////////
-//  Manage communications
-/////////////////////////////////
-
-//If the agent receives a message from the agent that has the flag, it updates the position of the objective.
-+goto(X,Y,Z)[source(A)] <-  -+objective(X,Y,Z);
-							-+state(standing);
-							-goto(X,Y,Z)[source(A)].
-
 /////////////////////////////////
 //  Initialize variables
 /////////////////////////////////
 
-//We initialize the agent with the "flanqueo" belief. The agent will flank the opponents.
+//The agent waits 40 seconds before starting to move.
 +!init
-   <-   -+my_health_threshold(70);
-   		+flanqueo.
+   <-   .wait(40000);
+   		-+my_health_threshold(60).
 
 
 
