@@ -60,7 +60,7 @@ echo.
 pushd .\bin\mas
 
 :: Set the logs folder and create one if none exists
-set logs_path=.\logs
+set logs_path=.\logs\%agent_config%
 if not exist "%logs_path%" mkdir %logs_path%
 
 :: Load the agents parameters from the config file
