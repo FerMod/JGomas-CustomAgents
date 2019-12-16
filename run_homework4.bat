@@ -1,3 +1,3 @@
 @echo off
 
-start run.cmd --config homework4
+call run.cmd --config homework4

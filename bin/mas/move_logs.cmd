@@ -11,8 +11,8 @@ IF NOT "%1"=="" (
     GOTO :loop
 )
 
-move APDescription.txt %folder_path%\
-move JGOMAS_Statistics.txt %folder_path%\
-move MTPs-Main-Container.txt %folder_path%\
-move agente.log %folder_path%\
-del /Q agente.log.*
+move APDescription.txt %folder_path%\ >nul
+move JGOMAS_Statistics.txt %folder_path%\ >nul
+move MTPs-Main-Container.txt %folder_path%\ >nul
+move agente.log %folder_path%\ >nul
+del /Q agente.log.* >nul
