@@ -90,7 +90,7 @@ start /b java -classpath "lib\jade.jar;lib\jadeTools.jar;lib\Base64.jar;lib\http
 
 popd
 
-if %run_render% == 1 then (
+if %run_render% == 1 (
     pushd .\bin\render\w32\
     timeout 5 > nul
     :: Run the jgomas renderer
