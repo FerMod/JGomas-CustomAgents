@@ -1,15 +1,24 @@
 
 # JGomas-CustomAgents
 
-Composition of the teams:
+## Team Members
+- Unai Lizarralde Imaz
+- Ferran Tudela García
+- Xabier Benavides
+- David Sandstrom
+- Eneko Alaminos
+- Aitor Domec
 
-### ALLIED:
+## Agents Compositions
+Composition of the agent teams:
+
+#### ALLIES:
   | Amount | Class |
   | :---: | :--- |
   | 5 | ALLIED_MEDIC        |
   | 2 | ALLIED_MEDIC-Decoys |
 
-### AXIS:
+#### AXIS:
   | Amount | Class |
   | :---: | :--- |
   | 4 | AXIS_FIELDOPS |
@@ -19,4 +28,4 @@ Composition of the teams:
 
 ----
 
-For further information about the behaviour of the teams, please refer to the attached [report](docs/Report.pdf).
+For further information about the behaviour of the teams, please refer to the attached [report](docs/Report.pdf), and for a brief explanation see the [presentation](docs/Presentation.pdf).
