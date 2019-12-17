@@ -9,7 +9,7 @@ team("AXIS").
 type("CLASS_FIELDOPS").
 
 // Value of "closeness" to the Flag, when patrolling in defense
-patrollingRadius(30).
+patrollingRadius(5).
 
 
 
@@ -40,7 +40,6 @@ patrollingRadius(30).
  * <em> It's very useful to overload this plan. </em>
  *
  */
- 
 //The agent aims the enemy with the lowest health.
 +!get_agent_to_aim
 <-  ?fovObjects(FOVObjects);
@@ -73,7 +72,7 @@ if (Length > 0 & not current_task(task(_,"TASK_GOTO_POSITION",_,_,_))) {
 					-+min(Health);
 				}
             }else{
-				//If the agent has an enemy in the point of view that is closer that 20 units, it doesn't shoot.
+				//If the agent has an enemy in the point of view that is closer than 20 units, it doesn't shoot.
 				.nth(4, Object, Dis);
 				?current_task(task(_, _, _, PosObj, _));
 				?my_position(MX,MY,MZ);
@@ -159,7 +158,7 @@ if (Length > 0 & not current_task(task(_,"TASK_GOTO_POSITION",_,_,_))) {
  * <em> It's very useful to overload this plan. </em>
  *
  */
-+!perform_look_action .
++!perform_look_action.
 /// <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR PERFORM_LOOK_ACTION GOES HERE.") }.
 
 /**
@@ -171,6 +170,7 @@ if (Length > 0 & not current_task(task(_,"TASK_GOTO_POSITION",_,_,_))) {
  * <em> It's very useful to overload this plan. </em>
  *
  */
+ 
 //If the agent has no ammo, it returns to patrol and it looks for ammo packs.
 +!perform_no_ammo_action <- 
   if(current_task(task(_,"TASK_ATTACK",_,_,_)))
@@ -196,8 +196,6 @@ if (Length > 0 & not current_task(task(_,"TASK_GOTO_POSITION",_,_,_))) {
   }
   -bucle(_);
 .
-
-/// <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR PERFORM_NO_AMMO_ACTION GOES HERE.") }.
 
 /**
  * Action to do when an agent is being shot.
@@ -242,25 +240,31 @@ if (Length > 0 & not current_task(task(_,"TASK_GOTO_POSITION",_,_,_))) {
  * <em> It's very useful to overload this plan. </em>
  *
  */
-
+ //At the beginning, the agent goes to patrol its patrolling position.
++!update_targets: first <- -first;
+							-+tasks([]);
+							?objective(X,Y,Z);
+							!add_task(task(5200,"TASK_PATROLLING", M, pos(X, Y, Z), "")).
+							
 //If the agent has seen an ammo pack and it has no ammo, it goes to its position.
 +!update_targets: ammo(Ix,Y,Iz) <- -ammo(_,_,_);
-                         		   !add_task(task(5100,"TASK_GOTO_POSITION", M, pos(Ix, Y, Iz), "")).
-
+                   				   !add_task(task(5100,"TASK_GOTO_POSITION", M, pos(Ix, Y, Iz), "")).
+				
 //If the agent has seen an enemy, it attacks that enemy.
 +!update_targets: attack(Ix,Y,Iz) <-   -attack(_,_,_);
 									   ?tasks(T);
 									   .delete(task(_, "TASK_ATTACK", _, _, _),T,NewTaskList);
 									   +tasks(NewTaskList);
 									   !add_task(task(5000,"TASK_ATTACK", M, pos(Ix, Y, Iz), "")).
-								
+						
 //If the agent has no ammo, it returns to patrol its patrolling position.
 +!update_targets: patrol(Ix,Y,Iz) <- -patrol(_,_,_);
 									 ?tasks(T);
 									 .delete(task(_, "TASK_ATTACK", _, _, _),T,NewTaskList);
-									 -+tasks(NewTaskList).
-
-+!update_targets.  
+									 -+tasks(NewTaskList).           
+				   
++!update_targets.
+  
   
 /////////////////////////////////
 //  CHECK MEDIC ACTION (ONLY MEDICS)
@@ -320,7 +324,7 @@ if (Length > 0 & not current_task(task(_,"TASK_GOTO_POSITION",_,_,_))) {
        ?my_health(Hr);
        
        if (Hr <= Ht) { 
-         ?my_position(X, Y, Z);
+         ?my_position(X, Y, Z);  
          .my_team("medic_AXIS", E2);
          .concat("cfm(",X, ", ", Y, ", ", Z, ", ", Hr, ")", Content2);
          .send_msg_with_conversation_id(E2, tell, Content2, "CFM");
@@ -354,6 +358,9 @@ if (Length > 0 & not current_task(task(_,"TASK_GOTO_POSITION",_,_,_))) {
 //  Initialize variables
 /////////////////////////////////
 
+//We initialize the patrolling position of the agent.
 +!init
-   <-   -+my_ammo_threshold(50). 
+   <- 	-+objective(165,0,205);
+		-+my_ammo_threshold(50);
+		+first. 
 

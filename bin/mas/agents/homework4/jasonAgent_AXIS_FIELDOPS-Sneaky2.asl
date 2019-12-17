@@ -9,7 +9,7 @@ team("AXIS").
 type("CLASS_FIELDOPS").
 
 // Value of "closeness" to the Flag, when patrolling in defense
-patrollingRadius(10).
+patrollingRadius(5).
 
 
 
@@ -40,101 +40,57 @@ patrollingRadius(10).
  * <em> It's very useful to overload this plan. </em>
  *
  */
+//The agent aims the enemy with the lowest health.
 +!get_agent_to_aim
-<-  ?debug(Mode); if (Mode<=2) { .println("Looking for agents to aim."); }
-?fovObjects(FOVObjects);
+<-  ?fovObjects(FOVObjects);
 .length(FOVObjects, Length);
-//create_ammo_pack;
-?debug(Mode); if (Mode<=1) { .println("El numero de objetos es:", Length); }
 
-if (Length > 0) {
+if (Length > 0 & not current_task(task(_,"TASK_GOTO_POSITION",_,_,_))) {
     +bucle(0);
-    
     -+aimed("false");
     -friendly_fire;
-  
+	-+min(1000);
     while (not friendly_fire & bucle(X) & (X < Length)) {
-        
-        //.println("En el bucle, y X vale:", X);
-        
         .nth(X, FOVObjects, Object);
-        // Object structure
-        // [#, TEAM, TYPE, ANGLE, DISTANCE, HEALTH, POSITION ]
         .nth(2, Object, Type);
         .nth(6, Object, pos(Ix,Y,Iz));
-        
-        ?debug(Mode); if (Mode<=2) { .println("Objeto Analizado: ", Object); }
-        
         if (Type >= 1000) {
             ?debug(Mode); if (Mode<=2) { .println("I found some object."); }
-            //if(Type==1001){.println("He visto objeto 1001 (medicina) en: ", Ix, " : ",Y," : ",Iz);}
-            //if(Type==1002){.println("He visto objeto 1002 (ammopack) en: ", Ix, " : ",Y," : ",Iz);}
-            //-+objective(Ix,Y,Iz);
-            //.println("Flag at seen at X:",Ix," Y: ",Y," Z: ",Iz);
-            //.my_team("AXIS", E3);
-            //.concat("c_flagSeenAt(",Ix, ", ", Y, ", ", Iz, ")", Content3);
-            //.send_msg_with_conversation_id(E3, tell, Content3, "c_flagSeenAt");
         } else {
             // Object may be an enemy
             .nth(1, Object, Team);
             ?my_formattedTeam(MyTeam);
             
             if (Team == 100) {  // Only if I'm AXIS
-        
-                ?debug(Mode); if (Mode<=2) { .println("Aiming an enemy. . .", MyTeam, " ", .number(MyTeam) , " ", Team, " ", .number(Team)); }
-
-				-+attack(Ix,Y,Iz);
-                //An enemy has the flag, GET HIM!!
-                /*!distance( pos( Ix, Y, Iz ), pos ( Ox, Y, Oz ));
-                ?distance( D );
-                if(D<2){
-                  .println("FLAG TAKEN SUBORDINADO!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-                  .println("Flag at X:",Oz," Y: ",Oy," Z: ",Oz);
-                  -+objective(Ix,Y,Iz);
-                  .my_team("AXIS", E3);
-                  .concat("c_flagTaken(",Ix, ", ", Y, ", ", Iz, ")", Content3);
-                  .send_msg_with_conversation_id(E3, tell, Content3, "c_flagTaken");
-                  ?tasks(TaskList);
-                  ?current_task(task(C_priority, _, _, _, _));
-                  ?current_task(Task);
-                  .delete(Task,TaskList,NewTaskList);
-                  -+tasks(NewTaskList);                         
-                  !add_task(task(5000,"TASK_ATTACK", M, pos(Ix, Y, Iz), ""));
-                  //-+state(standing);
-                }*/
-                -+aimed_agent(Object);
-                -+aimed("true");
-                
+				?min(Min);
+				.nth(5, Object, Health);
+				if(Min>Health){
+					-+attack(Ix,Y,Iz);
+					-+aimed_agent(Object);
+					-+aimed("true");
+					-+state(standing);
+					-+min(Health);
+				}
             }else{
-              
-        //Si tenemos un compañero en el punto de mira, no disparamos.
-        .nth(4, Object, Dis);
-        ?current_task(task(_, _, _, PosObj, _));
-        ?my_position(MX,MY,MZ);
-        .nth(6, Object, PosComp);
-        !cosangle(pos(MX,MY,MZ), PosObj, PosComp);
-        ?cosangle(A);
-        if(A > 0.9 & Dis < 25){
-          -+aimed("false");
-          -aimed_agent(_);
-          //.println("No disparo, hay un aliado delante");
-          +friendly_fire;
+				//If the agent has an enemy in the point of view that is closer than 20 units, it doesn't shoot.
+				.nth(4, Object, Dis);
+				?current_task(task(_, _, _, PosObj, _));
+				?my_position(MX,MY,MZ);
+				.nth(6, Object, PosComp);
+				!cosangle(pos(MX,MY,MZ), PosObj, PosComp);
+				?cosangle(A);
+				if(A > 0.95 & Dis < 20){
+				  -+aimed("false");
+				  -aimed_agent(_);
+				  +friendly_fire;
+				}
+			 }   
         }
-      }   
-        }
-        
         -+bucle(X+1);
-        
     }
-    
-    
 }
 
--bucle(_);
-if(attack(_,_,_)){
-	//.println("OJO");
-	-+state(standing);
-}.
+-bucle(_).
 
   
 +!cosangle(pos(X1,Y1,Z1), pos(X2,Y2,Z2), pos(X3,Y3,Z3)) <- X12 = X2-X1;
@@ -202,7 +158,7 @@ if(attack(_,_,_)){
  * <em> It's very useful to overload this plan. </em>
  *
  */
-+!perform_look_action .
++!perform_look_action.
 /// <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR PERFORM_LOOK_ACTION GOES HERE.") }.
 
 /**
@@ -214,23 +170,21 @@ if(attack(_,_,_)){
  * <em> It's very useful to overload this plan. </em>
  *
  */
+ 
+//If the agent has no ammo, it returns to patrol and it looks for ammo packs.
 +!perform_no_ammo_action <- 
-  .println("NO TENGO MUNICION");
   if(current_task(task(_,"TASK_ATTACK",_,_,_)))
   {
     ?objective(Ix,Y,Iz);
     -+patrol(Ix,Y,Iz);
     -+state(standing);
-	}
-  //If we see ammo, we will go there
+  }
   ?fovObjects(FOVObjects);
   .length(FOVObjects, Length);
-  if (Length > 0) {
+  if (Length > 0 & not current_task(task(_,"TASK_GOTO_POSITION",_,_,_))) {
     +bucle(0);
     while (bucle(X) & (X < Length)) {
       .nth(X, FOVObjects, Object);
-      // Object structure
-      // [#, TEAM, TYPE, ANGLE, DISTANCE, HEALTH, POSITION ]
       .nth(2, Object, Type);
       .nth(6, Object, pos(Ix,Y,Iz));
       if (Type == 1001) {
@@ -242,8 +196,6 @@ if(attack(_,_,_)){
   }
   -bucle(_);
 .
-
-/// <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR PERFORM_NO_AMMO_ACTION GOES HERE.") }.
 
 /**
  * Action to do when an agent is being shot.
@@ -288,21 +240,30 @@ if(attack(_,_,_)){
  * <em> It's very useful to overload this plan. </em>
  *
  */
+ //At the beginning, the agent goes to patrol its patrolling position.
++!update_targets: first <- -first;
+							-+tasks([]);
+							?objective(X,Y,Z);
+							!add_task(task(5200,"TASK_PATROLLING", M, pos(X, Y, Z), "")).
+							
+//If the agent has seen an ammo pack and it has no ammo, it goes to its position.
++!update_targets: ammo(Ix,Y,Iz) <- -ammo(_,_,_);
+                   				   !add_task(task(5100,"TASK_GOTO_POSITION", M, pos(Ix, Y, Iz), "")).
+				
+//If the agent has seen an enemy, it attacks that enemy.
++!update_targets: attack(Ix,Y,Iz) <-   -attack(_,_,_);
+									   ?tasks(T);
+									   .delete(task(_, "TASK_ATTACK", _, _, _),T,NewTaskList);
+									   +tasks(NewTaskList);
+									   !add_task(task(5000,"TASK_ATTACK", M, pos(Ix, Y, Iz), "")).
+						
+//If the agent has no ammo, it returns to patrol its patrolling position.
 +!update_targets: patrol(Ix,Y,Iz) <- -patrol(_,_,_);
 									 ?tasks(T);
 									 .delete(task(_, "TASK_ATTACK", _, _, _),T,NewTaskList);
-									 -+tasks(NewTaskList).
-+!update_targets: attack(Ix,Y,Iz) <- -attack(_,_,_);
-									 ?tasks(T);
-									 .delete(task(_, "TASK_ATTACK", _, _, _),T,NewTaskList);
-									 +tasks(NewTaskList);
-									 !add_task(task(5000,"TASK_ATTACK", M, pos(Ix, Y, Iz), "")).
+									 -+tasks(NewTaskList).           
+				   
 +!update_targets.
-+!update_targets: ammo(Ix,Y,Iz) <- -ammo(_,_,_);
-                   //?tasks(T);
-                   //.delete(task(_, "TASK_ATTACK", _, _, _),T,NewTaskList);
-                   //+tasks(NewTaskList);
-                   !add_task(task(5000,"TASK_GOTO_POSITION", M, pos(Ix, Y, Iz), "")).
   
   
 /////////////////////////////////
@@ -352,29 +313,19 @@ if(attack(_,_,_)){
  */
 +!performThresholdAction
        <-
-       
-       ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR PERFORM_TRESHOLD_ACTION GOES HERE.") }
-       
        ?my_ammo_threshold(At);
        ?my_ammo(Ar);
-       //Ammo threshhold
+       //If the agent has low ammo, it produces ammo packs.
        if (Ar <= At) {
           create_ammo_pack;
-         /* ?my_position(X, Y, Z);
-         .my_team("fieldops_AXIS", E1);
-         //.println("Mi equipo intendencia: ", E1 );
-         .concat("cfa(",X, ", ", Y, ", ", Z, ", ", Ar, ")", Content1);
-         .send_msg_with_conversation_id(E1, tell, Content1, "CFA");*/
        }
        
        ?my_health_threshold(Ht);
        ?my_health(Hr);
        
        if (Hr <= Ht) { 
-         ?my_position(X, Y, Z);
-          
+         ?my_position(X, Y, Z);  
          .my_team("medic_AXIS", E2);
-         //.println("Mi equipo medico: ", E2 );
          .concat("cfm(",X, ", ", Y, ", ", Z, ", ", Hr, ")", Content2);
          .send_msg_with_conversation_id(E2, tell, Content2, "CFM");
 
@@ -403,49 +354,13 @@ if(attack(_,_,_)){
    <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR cfa_refuse GOES HERE.")};
       -cfa_refuse.  
 
-//Commmandar asks for help
-+c_aimEnemy(X, Y, Z)[source(M)]
-    <- 
-    ?current_task(task(C_priority, Type, _, _, _));
-    if(Type == "TASK_GIVE_AMMOPACKS"){
-      .println("Order ignored, I giving ammo."); 
-      }
-    else {
-      .println("Commandar asks for help!! I'm going to: ",X, " ", Y, " ",Z);
-      !add_task(task(4500,"TASK_ATTACK", M, pos(X, Y, Z), ""));
-    }
-    .
-
-//The flag has been taken, KILL THAT BASTARD!!!!
-+c_flagTaken(X, Y, Z)[source(M)]
-    <- 
-    ?current_task(task(C_priority, Type, _, _, _));
-    if(Type == "TASK_GIVE_AMMOPACKS"){
-      .println("Order ignored, Im giving ammo."); 
-      }
-    else {
-      .println("FLAG TAKEN!! I'm going to: ",X, " ", Y, " ",Z);
-      ?tasks(TaskList);
-      ?current_task(Task);
-      .delete(Task,TaskList,NewTaskList);
-      -+tasks(NewTaskList);
-      !add_task(task(5000,"TASK_ATTACK", M, pos(X, Y, Z), ""));
-      //-+state(standing);
-    }
-    .
-
-+c_flagSeenAt(X, Y, Z)[source(M)]
-    <- 
-  -+objective(X,Y,Z);
-    .
-
 /////////////////////////////////
 //  Initialize variables
 /////////////////////////////////
 
+//We initialize the patrolling position of the agent.
 +!init
-   <- ?debug(Mode); if (Mode<=1) { .println("YOUR CODE FOR init GOES HERE.")}
-   ?my_position(X,Y,Z);
-   -+objective(125,Y,205);
-   -+my_ammo_threshold(50). 
+   <- 	-+objective(150,0,205);
+		-+my_ammo_threshold(50);
+		+first. 
 
