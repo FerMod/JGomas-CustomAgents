@@ -179,7 +179,7 @@ if (Length > 0) {
 				?objective(OX,OY,OZ);
 				!distance(pos(X,Y,Z), pos(OX,OY,OZ));
 				?distance(Dist);
-				if(Dist < 15){
+				if(Dist < 20){
 					+distraer;
 					-+state(standing);
 				}.
@@ -265,7 +265,6 @@ if (Length > 0) {
 
 //If the agent is distracting the enemies, it patrols the (135,0,215) position.
 +!update_targets: distraer <-   +newPos(0,0);
-						
 								+position(invalid);
 								while (position(invalid)) {
 									-position(invalid);
@@ -397,8 +396,8 @@ if (Length > 0) {
 
 //The agent waits 40 seconds before starting to move.
 +!init
-   <-   .wait(40000);
-   		-+my_health_threshold(60).
+   <-   .wait(37000);
+   		-+my_health_threshold(70).
 
 
 

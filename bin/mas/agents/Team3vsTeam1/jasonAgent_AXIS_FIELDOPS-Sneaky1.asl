@@ -45,7 +45,7 @@ patrollingRadius(5).
 <-  ?fovObjects(FOVObjects);
 .length(FOVObjects, Length);
 
-if (Length > 0) {
+if (Length > 0 & not current_task(task(_,"TASK_GOTO_POSITION",_,_,_))) {
     +bucle(0);
     -+aimed("false");
     -friendly_fire;
@@ -72,7 +72,7 @@ if (Length > 0) {
 					-+min(Health);
 				}
             }else{
-				//If the agent has an enemy in the point of view that is closer that 20 units, it doesn't shoot.
+				//If the agent has an enemy in the point of view that is closer than 20 units, it doesn't shoot.
 				.nth(4, Object, Dis);
 				?current_task(task(_, _, _, PosObj, _));
 				?my_position(MX,MY,MZ);
@@ -170,6 +170,8 @@ if (Length > 0) {
  * <em> It's very useful to overload this plan. </em>
  *
  */
+ 
+//If the agent has no ammo, it returns to patrol and it looks for ammo packs.
 +!perform_no_ammo_action <- 
   if(current_task(task(_,"TASK_ATTACK",_,_,_)))
   {
@@ -177,10 +179,9 @@ if (Length > 0) {
     -+patrol(Ix,Y,Iz);
     -+state(standing);
   }
-  //If we see ammo, we will go there
   ?fovObjects(FOVObjects);
   .length(FOVObjects, Length);
-  if (Length > 0) {
+  if (Length > 0 & not current_task(task(_,"TASK_GOTO_POSITION",_,_,_))) {
     +bucle(0);
     while (bucle(X) & (X < Length)) {
       .nth(X, FOVObjects, Object);
@@ -239,22 +240,24 @@ if (Length > 0) {
  * <em> It's very useful to overload this plan. </em>
  *
  */
- //We make the sneaky go directly to patrol the specific area
+ //At the beginning, the agent goes to patrol its patrolling position.
 +!update_targets: first <- -first;
 							-+tasks([]);
 							?objective(X,Y,Z);
 							!add_task(task(5200,"TASK_PATROLLING", M, pos(X, Y, Z), "")).
 							
-
+//If the agent has seen an ammo pack and it has no ammo, it goes to its position.
 +!update_targets: ammo(Ix,Y,Iz) <- -ammo(_,_,_);
                    				   !add_task(task(5100,"TASK_GOTO_POSITION", M, pos(Ix, Y, Iz), "")).
-								   
+				
+//If the agent has seen an enemy, it attacks that enemy.
 +!update_targets: attack(Ix,Y,Iz) <-   -attack(_,_,_);
 									   ?tasks(T);
 									   .delete(task(_, "TASK_ATTACK", _, _, _),T,NewTaskList);
 									   +tasks(NewTaskList);
 									   !add_task(task(5000,"TASK_ATTACK", M, pos(Ix, Y, Iz), "")).
-							
+						
+//If the agent has no ammo, it returns to patrol its patrolling position.
 +!update_targets: patrol(Ix,Y,Iz) <- -patrol(_,_,_);
 									 ?tasks(T);
 									 .delete(task(_, "TASK_ATTACK", _, _, _),T,NewTaskList);
@@ -312,7 +315,7 @@ if (Length > 0) {
        <-
        ?my_ammo_threshold(At);
        ?my_ammo(Ar);
-       //Ammo threshhold
+       //If the agent has low ammo, it produces ammo packs.
        if (Ar <= At) {
           create_ammo_pack;
        }
@@ -354,7 +357,8 @@ if (Length > 0) {
 /////////////////////////////////
 //  Initialize variables
 /////////////////////////////////
-                                                                                                                                  
+
+//We initialize the patrolling position of the agent.
 +!init
    <- 	-+objective(135,0,205);
 		-+my_ammo_threshold(50);
