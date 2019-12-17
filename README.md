@@ -19,4 +19,4 @@ Composition of the teams:
 
 ----
 
-For further information about the behaviour of the teams, please refer to the attached [report](docs/report.pdf).
+For further information about the behaviour of the teams, please refer to the attached [report](docs/Report.pdf).
