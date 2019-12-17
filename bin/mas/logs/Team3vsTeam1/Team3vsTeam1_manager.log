@@ -1,0 +1,74 @@
+Retrieving CommandDispatcher for platform null
+JGOMAS v. 0.1.6 (c) GTI-IA 2005 - 2008 (DSIC / UPV)
+
+Activating Agent (Manager@10.110.241.213:1099/JADE - id: 0) ... [OK]
+   * Name: JGomasManager
+   * Type: Management
+Registering in DF ... [OK]
+Manager (Expected Agents): 14
+Manager: Msg received: ID: 0 Name: A5 TYPE: 2 TEAM: 100
+Manager: [A5] is Ready!
+Manager: Msg received: ID: 0 Name: A2 TYPE: 2 TEAM: 100
+Manager: [A2] is Ready!
+Manager: Msg received: ID: 0 Name: T7 TYPE: 4 TEAM: 200
+Manager: [T7] is Ready!
+Manager: Msg received: ID: 0 Name: T1 TYPE: 4 TEAM: 200
+Manager: [T1] is Ready!
+Manager: Msg received: ID: 0 Name: A6 TYPE: 2 TEAM: 100
+Manager: [A6] is Ready!
+Manager: Msg received: ID: 0 Name: A3 TYPE: 2 TEAM: 100
+Manager: [A3] is Ready!
+Manager: Msg received: ID: 0 Name: T4 TYPE: 4 TEAM: 200
+Manager: [T4] is Ready!
+Manager: Msg received: ID: 0 Name: A7 TYPE: 2 TEAM: 100
+Manager: [A7] is Ready!
+Manager: Msg received: ID: 0 Name: T2 TYPE: 4 TEAM: 200
+Manager: [T2] is Ready!
+Manager: Msg received: ID: 0 Name: T5 TYPE: 4 TEAM: 200
+Manager: [T5] is Ready!
+Manager: Msg received: ID: 0 Name: A4 TYPE: 2 TEAM: 100
+Manager: [A4] is Ready!
+Manager: Msg received: ID: 0 Name: A1 TYPE: 2 TEAM: 100
+Manager: [A1] is Ready!
+Manager: Msg received: ID: 0 Name: T6 TYPE: 4 TEAM: 200
+Manager: [T6] is Ready!
+Manager: Msg received: ID: 0 Name: T3 TYPE: 4 TEAM: 200
+Manager: [T3] is Ready!
+Manager (Accepted Agents): 14
+Manager[1]: Sending notification to fight to: A5
+Manager[2]: Sending notification to fight to: A2
+Manager[3]: Sending notification to fight to: T7
+Manager[4]: Sending notification to fight to: T1
+Manager[5]: Sending notification to fight to: A6
+Manager[6]: Sending notification to fight to: A3
+Manager[7]: Sending notification to fight to: T4
+Manager[8]: Sending notification to fight to: A7
+Manager[9]: Sending notification to fight to: T2
+Manager[10]: Sending notification to fight to: T5
+Manager[11]: Sending notification to fight to: A4
+Manager[12]: Sending notification to fight to: A1
+Manager[13]: Sending notification to fight to: T6
+Manager[14]: Sending notification to fight to: T3
+Manager: Sending Objective notification to agents
+Preparing Connection to /127.0.0.1:51471
+JGOMAS Render Engine Server v. 0.1.0
+Waiting for client
+Client says:READY
+Server: Connection Accepted
+
+A3: got the objective pack 1
+[ObjectivePack@10.110.241.213:1099/JADE]: Objective Taken!!
+T7: returned the objective pack 1
+[ObjectivePack@10.110.241.213:1099/JADE]: Objective Taken!!
+Warning: No mapping found for expired timer 1576596628525
+
+
+Manager:  GAME FINISHED!! Winner Team: AXIS! (Time Expired)
+
+Shutting down server
+
+Agent (Manager@10.110.241.213:1099/JADE):
+   * Deregistering ... [OK]
+   * Killing ......... [OK]
+
+Client says:QUIT
